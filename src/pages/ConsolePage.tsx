@@ -25,7 +25,8 @@ import { Toggle } from '../components/toggle/Toggle';
 import { Map } from '../components/Map';
 
 import './ConsolePage.scss';
-import { isJsxOpeningLikeElement } from 'typescript';
+import { UserMessagesList } from '../components/UserMessagesList';
+import { saveUserMessage, getUserMessages } from '../utils/storage_utils';
 
 /**
  * Type for result from get_weather() function call
@@ -90,6 +91,13 @@ export function ConsolePage() {
           }
     )
   );
+
+  // Add this console log right after the RealtimeClient instantiation
+  // console.log(
+  //   LOCAL_RELAY_SERVER_URL
+  //     ? `Using relay server at: ${LOCAL_RELAY_SERVER_URL}`
+  //     : "Not using relay server, connecting directly to OpenAI API"
+  // );
 
   /**
    * References for
@@ -489,6 +497,12 @@ export function ConsolePage() {
         );
         item.formatted.file = wavFile;
       }
+
+      // Save user messages to localStorage
+      if (item.role === 'user' && item.formatted.transcript) {
+        saveUserMessage(item.formatted.transcript);
+      }
+
       setItems(items);
     });
 
@@ -722,6 +736,12 @@ export function ConsolePage() {
             <div className="content-block-title">set_memory()</div>
             <div className="content-block-body content-kv">
               {JSON.stringify(memoryKv, null, 2)}
+            </div>
+          </div>
+          <div className="content-block user-messages">
+            <div className="content-block-title">User Messages</div>
+            <div className="content-block-body">
+              <UserMessagesList />
             </div>
           </div>
         </div>
