@@ -27,6 +27,12 @@ import { Map } from '../components/Map';
 import './ConsolePage.scss';
 import { UserMessagesList } from '../components/UserMessagesList';
 import { saveUserMessage, getUserMessages } from '../utils/storage_utils';
+// Import the PromptProcessor component
+import { PromptProcessor } from '../components/PromptProcessor';
+
+// Import handlePrompt from promptHandler
+import { handlePrompt } from '../utils/promptHandler';
+import { ContextTracker } from '../components/ContextTracker';
 
 /**
  * Type for result from get_weather() function call
@@ -133,6 +139,11 @@ export function ConsolePage() {
   });
   const [marker, setMarker] = useState<Coordinates | null>(null);
 
+  // Add this state near the top of the component, with other state declarations
+  const [promptList, setPromptList] = useState<string[]>([]);
+
+  const [conversationSummary, setConversationSummary] = useState<string>('');
+
   /**
    * Utility for formatting the timing of logs
    */
@@ -192,7 +203,7 @@ export function ConsolePage() {
     client.sendUserMessageContent([
       {
         type: `input_text`,
-        text: `Hello!`,
+        text: `Generate a welcome message for the user. Make sure it's witty and gets them excited for the conversation.`,
         // text: `For testing purposes, I want you to list ten car brands. Number each item, e.g. "one (or whatever number you are one): the item name".`
       },
     ]);
@@ -504,6 +515,16 @@ export function ConsolePage() {
       }
 
       setItems(items);
+
+      // Check if the item is a user message
+      if (item.role === 'user' && item.type === 'message') {
+        // Extract the text or transcript
+        const userMessage = item.formatted.text || item.formatted.transcript;
+        if (userMessage) {
+          // Update the promptList with only the latest message
+          setPromptList([userMessage]);
+        }
+      }
     });
 
     setItems(client.conversation.getItems());
@@ -547,69 +568,9 @@ export function ConsolePage() {
                 <canvas ref={serverCanvasRef} />
               </div>
             </div>
-            <div className="content-block-title">events</div>
-            <div className="content-block-body" ref={eventsScrollRef}>
-              {!realtimeEvents.length && `awaiting connection...`}
-              {realtimeEvents.map((realtimeEvent, i) => {
-                const count = realtimeEvent.count;
-                const event = { ...realtimeEvent.event };
-                if (event.type === 'input_audio_buffer.append') {
-                  event.audio = `[trimmed: ${event.audio.length} bytes]`;
-                } else if (event.type === 'response.audio.delta') {
-                  event.delta = `[trimmed: ${event.delta.length} bytes]`;
-                }
-                return (
-                  <div className="event" key={event.event_id}>
-                    <div className="event-timestamp">
-                      {formatTime(realtimeEvent.time)}
-                    </div>
-                    <div className="event-details">
-                      <div
-                        className="event-summary"
-                        onClick={() => {
-                          // toggle event details
-                          const id = event.event_id;
-                          const expanded = { ...expandedEvents };
-                          if (expanded[id]) {
-                            delete expanded[id];
-                          } else {
-                            expanded[id] = true;
-                          }
-                          setExpandedEvents(expanded);
-                        }}
-                      >
-                        <div
-                          className={`event-source ${
-                            event.type === 'error'
-                              ? 'error'
-                              : realtimeEvent.source
-                          }`}
-                        >
-                          {realtimeEvent.source === 'client' ? (
-                            <ArrowUp />
-                          ) : (
-                            <ArrowDown />
-                          )}
-                          <span>
-                            {event.type === 'error'
-                              ? 'error!'
-                              : realtimeEvent.source}
-                          </span>
-                        </div>
-                        <div className="event-type">
-                          {event.type}
-                          {count && ` (${count})`}
-                        </div>
-                      </div>
-                      {!!expandedEvents[event.event_id] && (
-                        <div className="event-payload">
-                          {JSON.stringify(event, null, 2)}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+            <div className="content-block-title"></div>
+            <div className="content-block-body">
+              <PromptProcessor promptList={promptList} conversationSummary={conversationSummary} />
             </div>
           </div>
           <div className="content-block conversation">
@@ -738,12 +699,18 @@ export function ConsolePage() {
               {JSON.stringify(memoryKv, null, 2)}
             </div>
           </div>
-          <div className="content-block user-messages">
+          <div className="content-block context-summary">
+            <ContextTracker
+              client={clientRef.current}
+              onContextUpdate={(summary) => setConversationSummary(summary)}
+            />
+          </div>
+          {/* <div className="content-block user-messages">
             <div className="content-block-title">User Messages</div>
             <div className="content-block-body">
               <UserMessagesList />
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

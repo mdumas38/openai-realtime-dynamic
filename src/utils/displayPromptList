@@ -1,0 +1,7 @@
+import { getPromptList } from './promptHandler';
+
+export const displayPromptList = () => {
+  const promptListString = getPromptList();
+  console.log("Current Prompt List:");
+  console.log(promptListString);
+};

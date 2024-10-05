@@ -3,7 +3,7 @@
   font-weight: 400;
   font-style: normal;
   font-size: 12px;
-  height: 100%;
+  height: 95%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -275,6 +275,71 @@
         height: 100%;
         color: currentColor;
       }
+    }
+  }
+
+  .generated-image {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: center;
+    align-items: center;
+    // overflow: hidden;
+
+    img {
+      max-width: 90%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 20px;
+      opacity: 0;
+      animation: fadeIn 1s ease-in-out forwards, scaleIn 1s ease-in-out forwards;
+    }
+  }
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes scaleIn {
+    0% {
+      transform: scale(0.8);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  .generated-images {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 20px;
+    overflow-y: scroll;
+    max-height: 100%;
+    padding: 20px;
+  }
+
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes scaleIn {
+    0% {
+      transform: scale(0.8);
+    }
+    100% {
+      transform: scale(1);
     }
   }
 }
