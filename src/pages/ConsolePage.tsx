@@ -542,8 +542,8 @@ export function ConsolePage() {
     <div data-component="ConsolePage">
       <div className="content-top">
         <div className="content-title">
-          <img src="/openai-logomark.svg" />
-          <span>realtime console</span>
+          <img src="/DreamForge_Logo.png" />
+          <span>DreamForge</span>
         </div>
         <div className="content-api-key">
           {!LOCAL_RELAY_SERVER_URL && (
@@ -667,6 +667,7 @@ export function ConsolePage() {
           </div>
         </div>
         <div className="content-right">
+          {/* Commented out map section
           <div className="content-block map">
             <div className="content-block-title">get_weather()</div>
             <div className="content-block-title bottom">
@@ -693,6 +694,7 @@ export function ConsolePage() {
               )}
             </div>
           </div>
+          */}
           <div className="content-block kv">
             <div className="content-block-title">set_memory()</div>
             <div className="content-block-body content-kv">
@@ -705,12 +707,6 @@ export function ConsolePage() {
               onContextUpdate={(summary) => setConversationSummary(summary)}
             />
           </div>
-          {/* <div className="content-block user-messages">
-            <div className="content-block-title">User Messages</div>
-            <div className="content-block-body">
-              <UserMessagesList />
-            </div>
-          </div> */}
         </div>
       </div>
     </div>

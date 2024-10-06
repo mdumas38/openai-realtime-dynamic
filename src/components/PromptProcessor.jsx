@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { generateImage } from '../utils/image_generator';
 
 export const PromptProcessor = ({ promptList, conversationSummary }) => {
   const [generatedImages, setGeneratedImages] = useState([]);
+  const containerRef = useRef(null);
 
   useEffect(() => {
     const generateResponseAndImage = async () => {
@@ -30,8 +31,8 @@ export const PromptProcessor = ({ promptList, conversationSummary }) => {
             const imageUrl = await generateImage(generatedPrompt);
             console.log('Generated image URL:', imageUrl);
 
-            // Step 3: Append the new image URL to the array of generated images
-            setGeneratedImages(prevImages => [...prevImages, { url: imageUrl, key: Date.now() }]);
+            // Step 3: Append the new image URL to the beginning of the array of generated images
+            setGeneratedImages(prevImages => [{ url: imageUrl, key: Date.now() }, ...prevImages]);
           } else {
             console.error('Error from server:', data.error);
           }
@@ -44,8 +45,14 @@ export const PromptProcessor = ({ promptList, conversationSummary }) => {
     generateResponseAndImage();
   }, [promptList, conversationSummary]);
 
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    }
+  }, [generatedImages]);
+
   return (
-    <div className="generated-images">
+    <div className="generated-images" ref={containerRef}>
       {generatedImages.map(image => (
         <div key={image.key} className="generated-image">
           <img src={image.url} alt="Generated from prompt" />
