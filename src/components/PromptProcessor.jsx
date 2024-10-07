@@ -1,40 +1,51 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { generateImage } from '../utils/image_generator';
+import { analyzeImpact } from '../services/impactService';
+import { generateSummary } from '../services/summaryService';
 
 export const PromptProcessor = ({ promptList, conversationSummary }) => {
   const [generatedImages, setGeneratedImages] = useState([]);
   const containerRef = useRef(null);
 
   useEffect(() => {
-    const generateResponseAndImage = async () => {
+    const processPromptAndGenerateImage = async () => {
       if (promptList.length > 0) {
         const lastPrompt = promptList[promptList.length - 1];
         try {
           console.log('Processing prompt:', lastPrompt);
 
-          // Step 1: Send a POST request to the relay server
-          const response = await fetch('http://localhost:8080/api/generate-response', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ prompt: lastPrompt, summary: conversationSummary }),
-          });
+          // Step 1: Get the conversation summary
+          const summary = await generateSummary(conversationSummary);
 
-          const data = await response.json();
+          // Step 2: Analyze the impact of the latest input
+          const isSignificantImpact = await analyzeImpact(summary, lastPrompt);
 
-          if (response.ok) {
-            console.log('Generated prompt:', data.response);
-            const generatedPrompt = data.response;
+          if (isSignificantImpact) {
+            // Step 3: Generate a response if the impact is significant
+            const response = await fetch('http://localhost:8080/api/generate-response', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ prompt: lastPrompt, summary: summary }),
+            });
 
-            // Step 2: Use the generated prompt to generate an image
-            const imageUrl = await generateImage(generatedPrompt);
-            console.log('Generated image URL:', imageUrl);
+            const data = await response.json();
 
-            // Step 3: Append the new image URL to the beginning of the array of generated images
-            setGeneratedImages(prevImages => [{ url: imageUrl, key: Date.now() }, ...prevImages]);
+            if (response.ok) {
+              console.log('Generated response:', data.response);
+              const generatedPrompt = data.response;
+
+              // Step 4: Generate an image based on the response
+              const imageUrl = await generateImage(generatedPrompt);
+              console.log('Generated image URL:', imageUrl);
+
+              setGeneratedImages(prevImages => [{ url: imageUrl, key: Date.now() }, ...prevImages]);
+            } else {
+              console.error('Error from server:', data.error);
+            }
           } else {
-            console.error('Error from server:', data.error);
+            console.log('No significant impact detected. Skipping response generation.');
           }
         } catch (error) {
           console.error('Error processing prompt:', error);
@@ -42,7 +53,7 @@ export const PromptProcessor = ({ promptList, conversationSummary }) => {
       }
     };
 
-    generateResponseAndImage();
+    processPromptAndGenerateImage();
   }, [promptList, conversationSummary]);
 
   useEffect(() => {

@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { RealtimeClient } from '@openai/realtime-api-beta';
+import { ConversationSummarizer } from '../services/conversationSummarizer';
 
 interface ContextTrackerProps {
   client: RealtimeClient;
@@ -8,35 +9,48 @@ interface ContextTrackerProps {
 
 export const ContextTracker: React.FC<ContextTrackerProps> = ({ client, onContextUpdate }) => {
   const [conversationSummary, setConversationSummary] = useState<string>('');
+  const summarizer = new ConversationSummarizer();
+  const updatedThisTurn = useRef(false);
 
   useEffect(() => {
     const updateSummary = async () => {
-      const items = client.conversation.getItems();
-      const conversationText = items
-        .map((item) => `${item.role}: ${item.formatted.text || item.formatted.transcript}`)
-        .join('\n');
+      if (updatedThisTurn.current) return;
 
-      const summary = await generateSummary(conversationText);
-      setConversationSummary(summary);
-      onContextUpdate(summary);
-      
-      // Log the updated conversation summary
-      console.log('Updated Conversation Summary:', summary);
+      const items = client.conversation.getItems();
+      const conversationHistory = items.map(item => ({
+        role: item.role,
+        formatted: {
+          text: item.formatted.text || item.formatted.transcript
+        }
+      }));
+
+      const latestDialogue = conversationHistory[conversationHistory.length - 1]?.formatted.text || '';
+
+      const summary = await summarizer.updateSummary(conversationHistory, latestDialogue);
+      if (summary !== conversationSummary) {
+        setConversationSummary(summary);
+        onContextUpdate(summary);
+        console.log('Updated Conversation Summary:', summary);
+        updatedThisTurn.current = true;
+      }
     };
 
-    client.on('conversation.updated', updateSummary);
+    const handleConversationUpdated = () => {
+      updateSummary();
+    };
+
+    const handleConversationItemAppended = () => {
+      updatedThisTurn.current = false;
+    };
+
+    client.on('conversation.updated', handleConversationUpdated);
+    client.on('conversation.item.appended', handleConversationItemAppended);
 
     return () => {
-      client.off('conversation.updated', updateSummary);
+      client.off('conversation.updated', handleConversationUpdated);
+      client.off('conversation.item.appended', handleConversationItemAppended);
     };
-  }, [client, onContextUpdate]);
-
-  const generateSummary = async (conversationText: string) => {
-    // Here, you would typically call an API to generate a summary
-    // For this example, we'll use a placeholder function
-    // In a real implementation, you might want to use OpenAI's API or another summarization service
-    return `Summary of conversation: ${conversationText.slice(0, 100)}...`;
-  };
+  }, [client, onContextUpdate, summarizer, conversationSummary]);
 
   return (
     <div className="context-tracker">

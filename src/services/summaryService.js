@@ -18,7 +18,7 @@ export async function generateSummary(conversationText) {
     return data.summary;
   } catch (error) {
     console.error('Error generating summary:', error);
-    return `Summary: ${conversationText.slice(0, 100)}... (Error: ${error.message})`;
+    return '';
   }
 }
 

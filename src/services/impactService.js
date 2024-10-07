@@ -33,7 +33,7 @@ export async function analyzeImpact(summary, latestInput) {
 
 // // Example usage
 // const summary = "The conversation is about favorite basketball players, with a focus on LeBron James and his qualities.";
-// const latestInput = "I think Michael Jordan is also in the conversation for the greatest of all time.";
+// const latestInput = "the house is on fire!!";
 
 // analyzeImpact(summary, latestInput).then(isSignificantImpact => {
 //   if (isSignificantImpact) {

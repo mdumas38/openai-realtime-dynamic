@@ -13,7 +13,7 @@ export async function generateImage(prompt) {
       input: {
         prompt: prompt,
         num_images: 1,
-        inference_steps: 10,
+        inference_steps: 2,
       },
       logs: true,
       onQueueUpdate: (update) => {
