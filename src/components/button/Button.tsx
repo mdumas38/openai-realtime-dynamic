@@ -10,6 +10,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   iconColor?: 'red' | 'green' | 'grey';
   iconFill?: boolean;
   buttonStyle?: 'regular' | 'action' | 'alert' | 'flush';
+  isDarkMode?: boolean;
 }
 
 export function Button({
@@ -19,6 +20,7 @@ export function Button({
   iconColor = void 0,
   iconFill = false,
   buttonStyle = 'regular',
+  isDarkMode = false,
   ...rest
 }: ButtonProps) {
   const StartIcon = iconPosition === 'start' ? icon : null;
@@ -31,6 +33,9 @@ export function Button({
     classList.push(`icon-fill`);
   }
   classList.push(`button-style-${buttonStyle}`);
+  if (isDarkMode) {
+    classList.push('dark-mode');
+  }
 
   return (
     <button data-component="Button" className={classList.join(' ')} {...rest}>

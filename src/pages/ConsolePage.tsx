@@ -318,14 +318,17 @@ export function ConsolePage() {
    * Auto-scroll the conversation logs
    */
   useEffect(() => {
-    const conversationEls = [].slice.call(
-      document.body.querySelectorAll('[data-conversation-content]')
-    );
-    for (const el of conversationEls) {
-      const conversationEl = el as HTMLDivElement;
+    const conversationEl = document.querySelector('[data-conversation-content]');
+    const generatedImagesEl = document.querySelector('.generated-images');
+
+    if (conversationEl) {
       conversationEl.scrollTop = conversationEl.scrollHeight;
     }
-  }, [items]);
+
+    if (generatedImagesEl) {
+      generatedImagesEl.scrollTop = generatedImagesEl.scrollHeight;
+    }
+  }, [items, promptList]);
 
   /**
    * Set up render loops for the visualization canvas
@@ -554,7 +557,7 @@ export function ConsolePage() {
       <div className="content-top">
         <div className="content-title">
           <img src="/DreamForge_Logo_Premium.png" />
-          <span></span>
+          {/* <span>DreamForge</span> */}
         </div>
         <div className="content-api-key">
           {!LOCAL_RELAY_SERVER_URL && (
@@ -586,9 +589,9 @@ export function ConsolePage() {
             </div>
           </div>
           <div className="content-block conversation">
-            <div className="content-block-title">conversation</div>
+            <div className="content-block-title"></div>
             <div className="content-block-body" data-conversation-content>
-              {!items.length && `awaiting connection...`}
+              {!items.length && `Loading Magic...`}
               {items.map((conversationItem, i) => {
                 return (
                   <div className="conversation-item" key={conversationItem.id}>
@@ -708,7 +711,14 @@ export function ConsolePage() {
           </div>
           */}
           <div className="content-block kv">
-            <div className="content-block-title">set_memory()</div>
+            <div className="content-block-title">
+              <Button
+                label="set_memory()"
+                buttonStyle="flush"
+                isDarkMode={isDarkMode}
+                onClick={() => {/* Your existing onClick handler */}}
+              />
+            </div>
             <div className="content-block-body content-kv">
               {JSON.stringify(memoryKv, null, 2)}
             </div>
