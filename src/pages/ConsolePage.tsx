@@ -33,6 +33,7 @@ import { PromptProcessor } from '../components/PromptProcessor';
 // Import handlePrompt from promptHandler
 import { handlePrompt } from '../utils/promptHandler';
 import { ContextTracker } from '../components/ContextTracker';
+import { ThemeToggle } from '../components/ThemeToggle/ThemeToggle';
 
 /**
  * Type for result from get_weather() function call
@@ -143,6 +144,16 @@ export function ConsolePage() {
   const [promptList, setPromptList] = useState<string[]>([]);
 
   const [conversationSummary, setConversationSummary] = useState<string>('');
+
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    document.body.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
+  }, [isDarkMode]);
+
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode);
+  };
 
   /**
    * Utility for formatting the timing of logs
@@ -542,8 +553,8 @@ export function ConsolePage() {
     <div data-component="ConsolePage">
       <div className="content-top">
         <div className="content-title">
-          <img src="/DreamForge_Logo.png" />
-          <span>DreamForge</span>
+          <img src="/DreamForge_Logo_Premium.png" />
+          <span></span>
         </div>
         <div className="content-api-key">
           {!LOCAL_RELAY_SERVER_URL && (
@@ -556,6 +567,7 @@ export function ConsolePage() {
             />
           )}
         </div>
+        <ThemeToggle isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
       </div>
       <div className="content-main">
         <div className="content-logs">
