@@ -18,6 +18,8 @@
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
     "leaflet": "^1.9.4",
+    "lodash": "^4.17.21",
+    "lodash.debounce": "^4.0.8",
     "openai": "^4.67.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -58,6 +60,7 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@types/lodash.debounce": "^4.0.9",
     "nodemon": "^3.1.7"
   }
 }

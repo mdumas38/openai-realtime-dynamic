@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { RealtimeClient } from '@openai/realtime-api-beta';
 import { ConversationSummarizer } from '../services/conversationSummarizer';
+import debounce from 'lodash.debounce';
 
 interface ContextTrackerProps {
   client: RealtimeClient;
@@ -11,6 +12,17 @@ export const ContextTracker: React.FC<ContextTrackerProps> = ({ client, onContex
   const [conversationSummary, setConversationSummary] = useState<string>('');
   const summarizer = new ConversationSummarizer();
   const updatedThisTurn = useRef(false);
+
+  const updateSummary = async () => {
+    // Implementation of updateSummary
+  };
+
+  const debounceUpdateSummary = useCallback(
+    debounce(async () => {
+      await updateSummary();
+    }, 300), // Adjust the delay as needed
+    [conversationSummary, summarizer]
+  );
 
   useEffect(() => {
     const updateSummary = async () => {
@@ -27,13 +39,15 @@ export const ContextTracker: React.FC<ContextTrackerProps> = ({ client, onContex
       const latestDialogue = conversationHistory[conversationHistory.length - 1]?.formatted.text || '';
 
       const summary = await summarizer.updateSummary(conversationHistory, latestDialogue);
-      if (summary !== conversationSummary) {
+      if (summary !== null && summary !== conversationSummary) {
         setConversationSummary(summary);
         onContextUpdate(summary);
         console.log('Updated Conversation Summary:', summary);
         updatedThisTurn.current = true;
       }
     };
+
+    debounceUpdateSummary();
 
     const handleConversationUpdated = () => {
       updateSummary();
@@ -50,7 +64,7 @@ export const ContextTracker: React.FC<ContextTrackerProps> = ({ client, onContex
       client.off('conversation.updated', handleConversationUpdated);
       client.off('conversation.item.appended', handleConversationItemAppended);
     };
-  }, [client, onContextUpdate, summarizer, conversationSummary]);
+  }, [client, onContextUpdate, summarizer, debounceUpdateSummary]);
 
   return (
     <div className="context-tracker">

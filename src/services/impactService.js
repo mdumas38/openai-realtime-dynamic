@@ -8,6 +8,7 @@ import fetch from 'node-fetch';
  */
 export async function analyzeImpact(summary, latestInput) {
   try {
+    console.log('Sending impact analysis request to server...');
     const response = await fetch('http://localhost:8080/api/analyze-impact', {
       method: 'POST',
       headers: {
@@ -23,6 +24,7 @@ export async function analyzeImpact(summary, latestInput) {
     }
 
     const data = await response.json();
+    console.log('Server response for impact analysis:', data);
     return data.isSignificant;
   } catch (error) {
     console.error('Error analyzing impact:', error);
