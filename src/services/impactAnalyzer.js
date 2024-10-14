@@ -17,8 +17,9 @@ export class ImpactAnalyzer {
    * @returns {Promise<boolean>} - Whether the impact is significant.
    */
   async hasSignificantImpact(summary, latestInput) {
-    // Implement the logic to determine impact
+    console.log('Analyzing impact for:', { summary, latestInput });
     const impact = await analyzeImpact(summary, latestInput);
+    console.log('Impact analysis result:', impact);
     return impact;
   }
 }

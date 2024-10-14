@@ -585,7 +585,7 @@ export function ConsolePage() {
             </div>
             <div className="content-block-title"></div>
             <div className="content-block-body">
-              <PromptProcessor promptList={promptList} conversationSummary={conversationSummary} />
+              <PromptProcessor conversationSummary={conversationSummary} />
             </div>
           </div>
           <div className="content-block conversation">

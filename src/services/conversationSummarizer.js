@@ -1,5 +1,4 @@
 import { generateSummary } from './summaryService.js';
-import { ImpactAnalyzer } from './impactAnalyzer.js';
 
 /**
  * Conversation Summarizer Service
@@ -10,7 +9,6 @@ import { ImpactAnalyzer } from './impactAnalyzer.js';
 export class ConversationSummarizer {
   constructor() {
     this.currentSummary = '';
-    this.impactAnalyzer = new ImpactAnalyzer();
   }
 
   /**
@@ -24,20 +22,13 @@ export class ConversationSummarizer {
       .map(item => item.formatted.text || item.formatted.transcript)
       .join('\n');
 
-    // Check if the latest dialogue has a significant impact
-    const isSignificant = await this.impactAnalyzer.hasSignificantImpact(this.currentSummary, latestDialogue);
+    const newSummary = await generateSummary(fullText);
 
-    if (isSignificant) {
-      // Generate new summary only if the impact is significant
-      const newSummary = await generateSummary(fullText);
-
-      if (this.currentSummary !== newSummary) {
-        this.currentSummary = newSummary;
-        return this.currentSummary;
-      }
+    if (this.currentSummary !== newSummary) {
+      this.currentSummary = newSummary;
+      return this.currentSummary;
     }
 
-    // If no significant change, return null to indicate no update
     return null;
   }
 }
