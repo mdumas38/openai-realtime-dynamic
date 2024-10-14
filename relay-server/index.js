@@ -49,7 +49,7 @@ app.post('/api/generate-image-prompt', async (req, res) => {
         { role: "system", content: "You are a creative assistant that generates image prompts based on conversation summaries." },
         { role: "user", content: `Based on this conversation summary, generate a detailed image prompt: ${summary}` }
       ],
-      max_tokens: 100
+      max_tokens: 300
     });
 
     const imagePrompt = completion.choices[0].message.content;
