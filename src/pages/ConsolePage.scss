@@ -397,4 +397,53 @@
   .content-block.conversation .content-block-body {
     scroll-behavior: smooth;
   }
+
+  .generated-image-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    background-color: var(--secondary-bg-color);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .generated-image {
+    flex: 1;
+    margin-right: 16px;
+  }
+
+  .generated-prompt {
+    flex: 1;
+    padding: 0 16px;
+    border-left: 1px solid var(--border-color);
+  }
+
+  .generated-prompt h4 {
+    margin-top: 0;
+    color: var(--accent-color);
+  }
+
+  .generated-prompt p {
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  @media (max-width: 768px) {
+    .generated-image-container {
+      flex-direction: column;
+    }
+
+    .generated-image {
+      margin-right: 0;
+      margin-bottom: 16px;
+    }
+
+    .generated-prompt {
+      border-left: none;
+      border-top: 1px solid var(--border-color);
+      padding: 16px 0 0;
+    }
+  }
 }

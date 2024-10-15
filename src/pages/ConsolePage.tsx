@@ -145,7 +145,9 @@ export function ConsolePage() {
 
   const [conversationSummary, setConversationSummary] = useState<string>('');
 
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
+
+  const [latestUserInput, setLatestUserInput] = useState<string>('');
 
   useEffect(() => {
     document.body.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
@@ -214,7 +216,7 @@ export function ConsolePage() {
     client.sendUserMessageContent([
       {
         type: `input_text`,
-        text: `Generate a welcome message for the user. Make sure it's witty and gets them excited for the conversation.`,
+        text: `Read your system message and introduce the user to a brand new world-first experience called "Roomz"! Ask them if they want to create their own custom room with you today and share it with others to see who can create the coolest room in the world to win real prizes.`,
         // text: `For testing purposes, I want you to list ten car brands. Number each item, e.g. "one (or whatever number you are one): the item name".`
       },
     ]);
@@ -329,6 +331,14 @@ export function ConsolePage() {
       generatedImagesEl.scrollTop = generatedImagesEl.scrollHeight;
     }
   }, [items, promptList]);
+
+  // Add this new useEffect hook
+  useEffect(() => {
+    const conversationEl = document.querySelector('[data-conversation-content]');
+    if (conversationEl) {
+      conversationEl.scrollTop = conversationEl.scrollHeight;
+    }
+  }, [items]);
 
   /**
    * Set up render loops for the visualization canvas
@@ -532,10 +542,9 @@ export function ConsolePage() {
 
       // Check if the item is a user message
       if (item.role === 'user' && item.type === 'message') {
-        // Extract the text or transcript
         const userMessage = item.formatted.text || item.formatted.transcript;
         if (userMessage) {
-          // Update the promptList with only the latest message
+          setLatestUserInput(userMessage);
           setPromptList([userMessage]);
         }
       }
@@ -556,8 +565,8 @@ export function ConsolePage() {
     <div data-component="ConsolePage">
       <div className="content-top">
         <div className="content-title">
-          <img src="/DreamForge_Logo_Premium.png" />
-          {/* <span>DreamForge</span> */}
+          <img src="/Final_UniVerse_Logo.png" />
+          {/* <span>UniVerse</span> */}
         </div>
         <div className="content-api-key">
           {!LOCAL_RELAY_SERVER_URL && (
@@ -585,7 +594,9 @@ export function ConsolePage() {
             </div>
             <div className="content-block-title"></div>
             <div className="content-block-body">
-              <PromptProcessor conversationSummary={conversationSummary} />
+              <PromptProcessor 
+                conversationSummary={conversationSummary} 
+              />
             </div>
           </div>
           <div className="content-block conversation">
