@@ -24,8 +24,8 @@ export async function analyzeImpact(summary, latestInput) {
     }
 
     const data = await response.json();
-    console.log('Server response for impact analysis:', data);
-    return data.isSignificant;
+    console.log('Analyze Impact API Response:', data); // Add this line
+    return data.action === 'generate_new_image';
   } catch (error) {
     console.error('Error analyzing impact:', error);
     // Default to no impact to avoid unnecessary actions

@@ -35,6 +35,7 @@ import { handlePrompt } from '../utils/promptHandler';
 // Delete or comment out this line
 // import { ContextTracker } from '../components/ContextTracker';
 import { ThemeToggle } from '../components/ThemeToggle/ThemeToggle';
+import LoadingBar from '../components/LoadingBar/LoadingBar';
 
 /**
  * Type for result from get_weather() function call
@@ -146,7 +147,11 @@ export function ConsolePage() {
 
   const [conversationSummary, setConversationSummary] = useState<string>('');
 
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
+
+  const [latestUserInput, setLatestUserInput] = useState<string>('');
+  const [loading, setLoading] = useState<string>('');
+  const [replyProgress, setReplyProgress] = useState<number>(0);
 
   useEffect(() => {
     document.body.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
@@ -215,7 +220,8 @@ export function ConsolePage() {
     client.sendUserMessageContent([
       {
         type: `input_text`,
-        text: `Generate a welcome message for the user. Make sure it's witty and gets them excited for the conversation. Keep it very short and act like a carnival showman.`,
+        text: `Read your system message and introduce the user to a brand new world-first experience called "Roomz"! Ask them if they want to create their own custom room with you today and share it with others to see who can create the coolest room in the world to win real prizes.`,
+
         // text: `For testing purposes, I want you to list ten car brands. Number each item, e.g. "one (or whatever number you are one): the item name".`
       },
     ]);
@@ -330,6 +336,14 @@ export function ConsolePage() {
       generatedImagesEl.scrollTop = generatedImagesEl.scrollHeight;
     }
   }, [items, promptList]);
+
+  // Add this new useEffect hook
+  useEffect(() => {
+    const conversationEl = document.querySelector('[data-conversation-content]');
+    if (conversationEl) {
+      conversationEl.scrollTop = conversationEl.scrollHeight;
+    }
+  }, [items]);
 
   /**
    * Set up render loops for the visualization canvas
@@ -511,7 +525,35 @@ export function ConsolePage() {
       }
     });
     client.on('conversation.updated', async ({ item, delta }: any) => {
+      if (item.role === 'assistant' && item.status === 'in_progress') {
+        if (delta && delta.audio) {
+          const totalDuration = item.formatted.audio_duration || 31; // Default to 31 seconds if not available
+          const currentDuration = (delta.audio.length / 48000) + (replyProgress / 100 * totalDuration);
+          const newProgress = Math.min((currentDuration / totalDuration) * 100, 100);
+          setReplyProgress(newProgress);
+        }
+      } else if (item.status === 'completed') {
+        setReplyProgress(0); // Reset progress when reply is complete
+      }
+
+      // Save user messages to localStorage
+      if (item.role === 'user' && item.formatted.transcript) {
+        saveUserMessage(item.formatted.transcript);
+      }
+
       const items = client.conversation.getItems();
+      setItems(items);
+
+      // Check if the item is a user message
+      if (item.role === 'user' && item.type === 'message') {
+        const userMessage = item.formatted.text || item.formatted.transcript;
+        
+        if (userMessage) {
+          setLatestUserInput(userMessage);
+          setPromptList([userMessage]);
+        }
+      }
+
       if (delta?.audio) {
         wavStreamPlayer.add16BitPCM(delta.audio, item.id);
       }
@@ -522,21 +564,6 @@ export function ConsolePage() {
           24000
         );
         item.formatted.file = wavFile;
-      }
-
-      // Save user messages to localStorage
-      if (item.role === 'user' && item.formatted.transcript) {
-        saveUserMessage(item.formatted.transcript);
-      }
-
-      setItems(items);
-
-      // Check if the item is a user message
-      if (item.role === 'user' && item.type === 'message') {
-        const userMessage = item.formatted.text || item.formatted.transcript;
-        if (userMessage && !promptList.includes(userMessage)) {
-          setPromptList(prevList => [...prevList, userMessage]);
-        }
       }
     });
 
@@ -555,8 +582,8 @@ export function ConsolePage() {
     <div data-component="ConsolePage">
       <div className="content-top">
         <div className="content-title">
-          <img src="/DreamForge_Logo_Premium.png" />
-          {/* <span>DreamForge</span> */}
+          <img src="/Final_UniVerse_Logo.png" />
+          {/* <span>UniVerse</span> */}
         </div>
         <div className="content-api-key">
           {!LOCAL_RELAY_SERVER_URL && (
@@ -584,7 +611,11 @@ export function ConsolePage() {
             </div>
             <div className="content-block-title"></div>
             <div className="content-block-body">
-              <PromptProcessor promptList={promptList} client={clientRef.current} />
+
+              <PromptProcessor 
+                conversationSummary={conversationSummary} 
+              />
+<!--               <LoadingBar progress={replyProgress} /> -->
             </div>
           </div>
           <div className="content-block conversation">
