@@ -9,7 +9,7 @@ fal.config({
 export async function generateImage(prompt) {
   try {
     // Use the FAL client to generate the image
-    const result = await fal.subscribe('fal-ai/flux/schnell', {
+    const result = await fal.subscribe('fal-ai/flux-pro/v1.1', {
       input: {
         prompt: prompt,
         num_images: 1,

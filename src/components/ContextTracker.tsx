@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { RealtimeClient } from '@openai/realtime-api-beta';
 import { ConversationSummarizer } from '../services/conversationSummarizer';
+import debounce from 'lodash.debounce';
 
 interface ContextTrackerProps {
   client: RealtimeClient;
@@ -10,6 +11,17 @@ interface ContextTrackerProps {
 export const ContextTracker: React.FC<ContextTrackerProps> = ({ client, onContextUpdate }) => {
   const [conversationSummary, setConversationSummary] = useState<string>('');
   const summarizer = useRef(new ConversationSummarizer());
+
+  const updateSummary = async () => {
+    // Implementation of updateSummary
+  };
+
+  const debounceUpdateSummary = useCallback(
+    debounce(async () => {
+      await updateSummary();
+    }, 300), // Adjust the delay as needed
+    [conversationSummary, summarizer]
+  );
 
   useEffect(() => {
     const updateSummary = async (items: any[]) => {
@@ -21,8 +33,8 @@ export const ContextTracker: React.FC<ContextTrackerProps> = ({ client, onContex
       }));
 
       const latestDialogue = conversationHistory[conversationHistory.length - 1]?.formatted.text || '';
-
       const summary = await summarizer.current.updateSummary(conversationHistory, latestDialogue);
+
       if (summary !== null && summary !== conversationSummary) {
         setConversationSummary(summary);
         onContextUpdate(summary);

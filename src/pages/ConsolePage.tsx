@@ -32,7 +32,8 @@ import { PromptProcessor } from '../components/PromptProcessor';
 
 // Import handlePrompt from promptHandler
 import { handlePrompt } from '../utils/promptHandler';
-import { ContextTracker } from '../components/ContextTracker';
+// Delete or comment out this line
+// import { ContextTracker } from '../components/ContextTracker';
 import { ThemeToggle } from '../components/ThemeToggle/ThemeToggle';
 import LoadingBar from '../components/LoadingBar/LoadingBar';
 
@@ -220,6 +221,7 @@ export function ConsolePage() {
       {
         type: `input_text`,
         text: `Read your system message and introduce the user to a brand new world-first experience called "Roomz"! Ask them if they want to create their own custom room with you today and share it with others to see who can create the coolest room in the world to win real prizes.`,
+
         // text: `For testing purposes, I want you to list ten car brands. Number each item, e.g. "one (or whatever number you are one): the item name".`
       },
     ]);
@@ -545,6 +547,7 @@ export function ConsolePage() {
       // Check if the item is a user message
       if (item.role === 'user' && item.type === 'message') {
         const userMessage = item.formatted.text || item.formatted.transcript;
+        
         if (userMessage) {
           setLatestUserInput(userMessage);
           setPromptList([userMessage]);
@@ -608,10 +611,11 @@ export function ConsolePage() {
             </div>
             <div className="content-block-title"></div>
             <div className="content-block-body">
+
               <PromptProcessor 
                 conversationSummary={conversationSummary} 
               />
-              <LoadingBar progress={replyProgress} />
+<!--               <LoadingBar progress={replyProgress} /> -->
             </div>
           </div>
           <div className="content-block conversation">
@@ -750,10 +754,10 @@ export function ConsolePage() {
             </div>
           </div>
           <div className="content-block context-summary">
-            <ContextTracker
+            {/* <ContextTracker
               client={clientRef.current}
               onContextUpdate={(summary) => setConversationSummary(summary)}
-            />
+            /> */}
           </div>
         </div>
       </div>
