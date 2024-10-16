@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { generateImage } from '../utils/image_generator';
-import { generateImagePrompt } from '../services/imagePromptGenerator';
+import { analyzeImpact } from '../services/impactService';
+import { generateSummary } from '../services/summaryService';
+import { RealtimeClient } from '@openai/realtime-api-beta';
+import { ConversationSummarizer } from '../services/conversationSummarizer';
+import debounce from 'lodash.debounce';
 
-export const PromptProcessor = ({ conversationSummary }) => {
-
+export const PromptProcessor = ({ promptList, client }) => {
   const [generatedImages, setGeneratedImages] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
   const containerRef = useRef(null);
   const [processedPrompts, setProcessedPrompts] = useState([]);
   const [conversationSummary, setConversationSummary] = useState('');
@@ -64,42 +66,67 @@ export const PromptProcessor = ({ conversationSummary }) => {
   }, [client, conversationSummary]);
 
   useEffect(() => {
-    const generateImageFromSummary = async () => {
-      if (conversationSummary) {
-        setIsLoading(true);
-        try {
-          const imagePrompt = await generateImagePrompt(conversationSummary);
-          const imageUrl = await generateImage(imagePrompt);
-          setGeneratedImages(prevImages => [{ url: imageUrl, prompt: imagePrompt, key: Date.now() }, ...prevImages]);
-        } catch (error) {
-          console.error('Error generating image:', error);
-        } finally {
-          setIsLoading(false);
+    const processPromptAndGenerateImage = async () => {
+      if (promptList.length > 0) {
+        const lastPrompt = promptList[promptList.length - 1];
+        if (!processedPrompts.includes(lastPrompt)) {
+          console.log('Processing prompt:', lastPrompt);
+          try {
+            // Step 1: Get the conversation summary
+            const summary = await generateSummary(conversationSummary);
+
+            // Step 2: Analyze the impact of the latest input
+            const isSignificantImpact = await analyzeImpact(summary, lastPrompt);
+
+            if (isSignificantImpact) {
+              // Step 3: Generate a response if the impact is significant
+              const response = await fetch('http://localhost:8080/api/generate-response', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ prompt: lastPrompt, summary: summary }),
+              });
+
+              const data = await response.json();
+
+              if (response.ok) {
+                console.log('Generated response:', data.response);
+                const generatedPrompt = data.response;
+
+                // Step 4: Generate an image based on the response
+                const imageUrl = await generateImage(generatedPrompt);
+                console.log('Generated image URL:', imageUrl);
+
+                setGeneratedImages(prevImages => [{ url: imageUrl, key: Date.now() }, ...prevImages]);
+                setProcessedPrompts(prev => [...prev, lastPrompt]);
+              } else {
+                console.error('Error from server:', data.error);
+              }
+            } else {
+              console.log('No significant impact detected. Skipping response generation.');
+            }
+          } catch (error) {
+            console.error('Error processing prompt:', error);
+          }
         }
       }
     };
-    generateImageFromSummary();
-  }, [conversationSummary]);
 
+    processPromptAndGenerateImage();
+  }, [promptList]); // Removed conversationSummary from dependency array
 
   useEffect(() => {
-    if (containerRef.current && generatedImages.length > 0) {
+    if (containerRef.current) {
       containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
   }, [generatedImages]);
 
   return (
     <div className="generated-images" ref={containerRef}>
-      {isLoading && <div className="loading-indicator">Generating new image...</div>}
       {generatedImages.map(image => (
-        <div key={image.key} className="generated-image-container">
-          <div className="generated-image">
-            <img src={image.url} alt="Generated from conversation" />
-          </div>
-          <div className="generated-prompt">
-            <h4>Prompt:</h4>
-            <p>{image.prompt}</p>
-          </div>
+        <div key={image.key} className="generated-image">
+          <img src={image.url} alt="Generated from prompt" />
         </div>
       ))}
     </div>

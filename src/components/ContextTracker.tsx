@@ -10,7 +10,8 @@ interface ContextTrackerProps {
 
 export const ContextTracker: React.FC<ContextTrackerProps> = ({ client, onContextUpdate }) => {
   const [conversationSummary, setConversationSummary] = useState<string>('');
-  const summarizer = useRef(new ConversationSummarizer());
+  const summarizer = new ConversationSummarizer();
+  const updatedThisTurn = useRef(false);
 
   const updateSummary = async () => {
     // Implementation of updateSummary
@@ -24,7 +25,10 @@ export const ContextTracker: React.FC<ContextTrackerProps> = ({ client, onContex
   );
 
   useEffect(() => {
-    const updateSummary = async (items: any[]) => {
+    const updateSummary = async () => {
+      if (updatedThisTurn.current) return;
+
+      const items = client.conversation.getItems();
       const conversationHistory = items.map(item => ({
         role: item.role,
         formatted: {
@@ -33,28 +37,34 @@ export const ContextTracker: React.FC<ContextTrackerProps> = ({ client, onContex
       }));
 
       const latestDialogue = conversationHistory[conversationHistory.length - 1]?.formatted.text || '';
-      const summary = await summarizer.current.updateSummary(conversationHistory, latestDialogue);
 
+      const summary = await summarizer.updateSummary(conversationHistory, latestDialogue);
       if (summary !== null && summary !== conversationSummary) {
         setConversationSummary(summary);
         onContextUpdate(summary);
         console.log('Updated Conversation Summary:', summary);
+        updatedThisTurn.current = true;
       }
     };
 
-    const handleConversationItemCompleted = ({ item }: any) => {
-      if (item.status === 'completed') {
-        const items = client.conversation.getItems();
-        updateSummary(items);
-      }
+    debounceUpdateSummary();
+
+    const handleConversationUpdated = () => {
+      updateSummary();
     };
 
-    client.on('conversation.item.completed', handleConversationItemCompleted);
+    const handleConversationItemAppended = () => {
+      updatedThisTurn.current = false;
+    };
+
+    client.on('conversation.updated', handleConversationUpdated);
+    client.on('conversation.item.appended', handleConversationItemAppended);
 
     return () => {
-      client.off('conversation.item.completed', handleConversationItemCompleted);
+      client.off('conversation.updated', handleConversationUpdated);
+      client.off('conversation.item.appended', handleConversationItemAppended);
     };
-  }, [client, onContextUpdate, conversationSummary]);
+  }, [client, onContextUpdate, summarizer, debounceUpdateSummary]);
 
   return (
     <div className="context-tracker">
