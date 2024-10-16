@@ -15,6 +15,10 @@ export async function generateSummary(conversationText) {
     }
 
     const data = await response.json();
+    if (!data.summary) {
+      console.error('No summary returned from the server');
+      return '';
+    }
     return data.summary;
   } catch (error) {
     console.error('Error generating summary:', error);

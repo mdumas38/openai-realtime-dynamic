@@ -17,23 +17,21 @@ export function setUseImageEnhancer(useEnhancer) {
 }
 
 // Function to generate an image based on a prompt
-export async function generateImage(prompt) {
+export async function generateImage(prompt, generatorType) {
   try {
-    // Use the currentImageGenerator and useImageEnhancer variables to adjust the image generation process
-    let generatorModel = 'fal-ai/flux-pro/v1.1'; // default model
+    let generatorModel = 'fal-ai/flux/schnell'; // default model
 
-    if (currentImageGenerator === 'enhanced') {
-      generatorModel = 'fal-ai/flux-pro/v2.0'; // example of a different model
-    } else if (currentImageGenerator === 'artistic') {
-      generatorModel = 'fal-ai/flux-artistic/v1.0'; // example of another model
+    if (generatorType === 'enhanced') {
+      generatorModel = 'fal-ai/flux-pro/v1.1';
+    } else if (generatorType === 'artistic') {
+      generatorModel = 'fal-ai/flux/dev';
     }
 
-    // Use the FAL client to generate the image
     const result = await fal.subscribe(generatorModel, {
       input: {
         prompt: prompt,
         num_images: 1,
-        inference_steps: useImageEnhancer ? 50 : 30, // Example of using the enhancer setting
+        inference_steps: 2,
       },
       logs: true,
       onQueueUpdate: (update) => {
@@ -44,17 +42,11 @@ export async function generateImage(prompt) {
     });
 
     console.log('Image generated:', result);
-
-    // Get the image URL from the result
+    console.log('Used generator:', generatorModel);
     const imageUrl = result.images[0].url;
-
-    // Return the image URL for use in the frontend
     return imageUrl;
   } catch (error) {
     console.error('Error generating image:', error);
-    if (error.body && error.body.detail) {
-      console.error('Error details:', JSON.stringify(error.body.detail, null, 2));
-    }
     throw error;
   }
 }

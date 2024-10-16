@@ -16,10 +16,16 @@ export async function generateImagePrompt(summary) {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to generate image prompt');
+      const errorData = await response.json();
+      console.error('Error response from server:', errorData);
+      throw new Error(`Failed to generate image prompt: ${errorData.error || response.statusText}`);
     }
 
     const data = await response.json();
+    if (!data.imagePrompt) {
+      console.error('No image prompt returned from the server');
+      return '';
+    }
     return data.imagePrompt;
   } catch (error) {
     console.error('Error generating image prompt:', error);

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { generateImage } from '../utils/image_generator';
 import { generateImagePrompt } from '../services/imagePromptGenerator';
 
-export const PromptProcessor = ({ conversationSummary }) => {
+export const PromptProcessor = ({ conversationSummary, generatorType }) => {
   const [generatedImages, setGeneratedImages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const containerRef = useRef(null);
@@ -13,7 +13,7 @@ export const PromptProcessor = ({ conversationSummary }) => {
         setIsLoading(true);
         try {
           const imagePrompt = await generateImagePrompt(conversationSummary);
-          const imageUrl = await generateImage(imagePrompt);
+          const imageUrl = await generateImage(imagePrompt, generatorType);
           setGeneratedImages(prevImages => [{ url: imageUrl, prompt: imagePrompt, key: Date.now() }, ...prevImages]);
         } catch (error) {
           console.error('Error generating image:', error);
@@ -24,7 +24,7 @@ export const PromptProcessor = ({ conversationSummary }) => {
     };
 
     generateImageFromSummary();
-  }, [conversationSummary]);
+  }, [conversationSummary, generatorType]);
 
   useEffect(() => {
     if (containerRef.current && generatedImages.length > 0) {

@@ -655,6 +655,7 @@ export function ConsolePage({ settings, selectedExperience, onQuit }: ConsolePag
             <div className="content-block-body">
               <PromptProcessor 
                 conversationSummary={conversationSummary} 
+                generatorType={imageGenerator}
               />
             </div>
           </div>
