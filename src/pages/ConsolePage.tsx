@@ -34,6 +34,7 @@ import { PromptProcessor } from '../components/PromptProcessor';
 import { handlePrompt } from '../utils/promptHandler';
 import { ContextTracker } from '../components/ContextTracker';
 import { ThemeToggle } from '../components/ThemeToggle/ThemeToggle';
+import { GameSettings } from '../App';
 
 /**
  * Type for result from get_weather() function call
@@ -62,7 +63,7 @@ interface RealtimeEvent {
   event: { [key: string]: any };
 }
 
-export function ConsolePage() {
+export function ConsolePage({ settings, selectedExperience }: { settings: GameSettings; selectedExperience: string | null }) {
   /**
    * Ask user for API Key
    * If we're using the local relay server, we don't need this
@@ -744,6 +745,11 @@ export function ConsolePage() {
             />
           </div>
         </div>
+      </div>
+      <div className="settings-info">
+        <p>Volume: {settings.volume}%</p>
+        <p>Image Generator: {settings.imageGenerator}</p>
+        <p>Image Enhancer: {settings.useEnhancer ? 'On' : 'Off'}</p>
       </div>
     </div>
   );
