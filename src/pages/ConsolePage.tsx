@@ -224,6 +224,9 @@ export function ConsolePage() {
     if (client.getTurnDetectionType() === 'server_vad') {
       await wavRecorder.record((data) => client.appendInputAudio(data.mono));
     }
+
+    // Add this line to set the voice
+    client.updateSession({ voice: 'echo' });
   }, []);
 
   /**

@@ -31,7 +31,7 @@ export const ContextTracker: React.FC<ContextTrackerProps> = ({ client, onContex
     };
 
     const handleConversationItemCompleted = ({ item }: any) => {
-      if (item.status === 'completed') {
+      if (item.status === 'completed' && item.role === 'assistant') {
         const items = client.conversation.getItems();
         updateSummary(items);
       }
