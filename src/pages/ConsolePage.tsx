@@ -63,7 +63,15 @@ interface RealtimeEvent {
   event: { [key: string]: any };
 }
 
-export function ConsolePage({ settings, selectedExperience }: { settings: GameSettings; selectedExperience: string | null }) {
+// Update the component props interface
+interface ConsolePageProps {
+  settings: GameSettings;
+  selectedExperience: string | null;
+  onQuit: () => void;
+}
+
+// Update the component definition
+export function ConsolePage({ settings, selectedExperience, onQuit }: ConsolePageProps) {
   /**
    * Ask user for API Key
    * If we're using the local relay server, we don't need this
@@ -150,6 +158,9 @@ export function ConsolePage({ settings, selectedExperience }: { settings: GameSe
 
   const [latestUserInput, setLatestUserInput] = useState<string>('');
 
+  const [imageGenerator, setImageGenerator] = useState(settings.imageGenerator);
+  const [useImageEnhancer, setUseImageEnhancer] = useState(settings.useEnhancer);
+
   useEffect(() => {
     document.body.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
   }, [isDarkMode]);
@@ -206,6 +217,9 @@ export function ConsolePage({ settings, selectedExperience }: { settings: GameSe
     setRealtimeEvents([]);
     setItems(client.conversation.getItems());
 
+    // Initialize engines after connection
+    initializeEngines();
+
     // Connect to microphone
     await wavRecorder.begin();
 
@@ -214,11 +228,12 @@ export function ConsolePage({ settings, selectedExperience }: { settings: GameSe
 
     // Connect to realtime API
     await client.connect();
+
+    // Modify the initial message to include the selected experience
     client.sendUserMessageContent([
       {
         type: `input_text`,
-        text: `Read your system message and introduce the user to a brand new world-first experience called "Roomz"! Ask them if they want to create their own custom room with you today and share it with others to see who can create the coolest room in the world to win real prizes.`,
-        // text: `For testing purposes, I want you to list ten car brands. Number each item, e.g. "one (or whatever number you are one): the item name".`
+        text: `Initialize the ${selectedExperience} experience and introduce it to the user. Ask them if they're ready to begin.`,
       },
     ]);
 
@@ -228,7 +243,7 @@ export function ConsolePage({ settings, selectedExperience }: { settings: GameSe
 
     // Add this line to set the voice
     client.updateSession({ voice: 'echo' });
-  }, []);
+  }, [selectedExperience, settings]);
 
   /**
    * Disconnect and reset conversation state
@@ -562,6 +577,46 @@ export function ConsolePage({ settings, selectedExperience }: { settings: GameSe
     };
   }, []);
 
+  // Modify the useEffect hook that handles connection
+  useEffect(() => {
+    if (isConnected) {
+      initializeEngines();
+    }
+  }, [isConnected, settings, selectedExperience]);
+
+  // Add a new function to initialize engines
+  const initializeEngines = () => {
+    const client = clientRef.current;
+    
+    // Update assistant instructions based on the selected experience
+    let experienceInstructions = '';
+    switch (selectedExperience) {
+      case 'Roomz':
+        experienceInstructions = 'You are an AI assistant helping users create and design virtual rooms.';
+        break;
+      case 'Avatar State':
+        experienceInstructions = 'You are an AI assistant helping users create and customize their digital avatars.';
+        break;
+      case 'Mad Libs AI':
+        experienceInstructions = 'You are an AI assistant helping users play a creative storytelling game.';
+        break;
+      default:
+        experienceInstructions = 'You are a helpful AI assistant.';
+    }
+
+    const updatedInstructions = `${instructions}\n\n${experienceInstructions}`;
+    client.updateSession({ instructions: updatedInstructions });
+
+    // Set the voice (you can customize this based on settings if needed)
+    client.updateSession({ voice: 'echo' });
+
+    // Initialize image generator
+    setImageGenerator(settings.imageGenerator);
+    setUseImageEnhancer(settings.useEnhancer);
+
+    console.log(`Initialized engines for ${selectedExperience} experience with settings:`, settings);
+  };
+
   /**
    * Render the application
    */
@@ -693,6 +748,12 @@ export function ConsolePage({ settings, selectedExperience }: { settings: GameSe
               onClick={
                 isConnected ? disconnectConversation : connectConversation
               }
+            />
+            <Button
+              label="Quit Game"
+              icon={X}
+              buttonStyle="alert"
+              onClick={onQuit}
             />
           </div>
         </div>

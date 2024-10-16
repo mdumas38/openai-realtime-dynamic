@@ -46,6 +46,12 @@ function App() {
     navigateTo('gameEngine');
   };
 
+  // Function to handle quitting the game
+  const handleQuitGame = () => {
+    setCurrentScreen('mainMenu');
+    setSelectedExperience(null); // Reset the selected experience
+  };
+
   // Render the appropriate component based on currentScreen
   const renderScreen = () => {
     switch (currentScreen) {
@@ -81,6 +87,7 @@ function App() {
           <ConsolePage 
             settings={settings}
             selectedExperience={selectedExperience}
+            onQuit={handleQuitGame}
           />
         );
       default:
