@@ -1,9 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { generateImage } from '../utils/image_generator';
 import { generateImagePrompt } from '../services/imagePromptGenerator';
+import ImageCarousel from './ImageCarousel/ImageCarousel';
 
 export const PromptProcessor = ({ conversationSummary, generatorType }) => {
   const [generatedImages, setGeneratedImages] = useState([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const containerRef = useRef(null);
 
@@ -13,10 +15,15 @@ export const PromptProcessor = ({ conversationSummary, generatorType }) => {
         setIsLoading(true);
         try {
           const imagePrompt = await generateImagePrompt(conversationSummary);
-          const imageUrl = await generateImage(imagePrompt, generatorType);
-          setGeneratedImages(prevImages => [{ url: imageUrl, prompt: imagePrompt, key: Date.now() }, ...prevImages]);
+          const newImages = [];
+          for (let i = 0; i < 4; i++) {
+            const imageUrl = await generateImage(imagePrompt, generatorType);
+            newImages.push({ url: imageUrl, prompt: imagePrompt, key: Date.now() + i });
+          }
+          setGeneratedImages(prevImages => [...newImages, ...prevImages.slice(0, 16)]);
+          setCurrentImageIndex(0);
         } catch (error) {
-          console.error('Error generating image:', error);
+          console.error('Error generating images:', error);
         } finally {
           setIsLoading(false);
         }
@@ -34,18 +41,10 @@ export const PromptProcessor = ({ conversationSummary, generatorType }) => {
 
   return (
     <div className="generated-images" ref={containerRef}>
-      {isLoading && <div className="loading-indicator">Generating new image...</div>}
-      {generatedImages.map(image => (
-        <div key={image.key} className="generated-image-container">
-          <div className="generated-image">
-            <img src={image.url} alt="Generated from conversation" />
-          </div>
-          <div className="generated-prompt">
-            <h4>Prompt:</h4>
-            <p>{image.prompt}</p>
-          </div>
-        </div>
-      ))}
+      {isLoading && <div className="loading-indicator">Generating new images...</div>}
+      {generatedImages.length > 0 && (
+        <ImageCarousel images={generatedImages.slice(0, 4)} />
+      )}
     </div>
   );
 };
