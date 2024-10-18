@@ -8,7 +8,7 @@ interface ExperienceSelectorProps {
 }
 
 export const ExperienceSelector: React.FC<ExperienceSelectorProps> = ({ onSelect, onBack }) => {
-  const experiences = ['Roomz', 'Avatar State', 'Mad Libs AI'];
+  const experiences = ['Roomz', 'Avatar State', 'Mad Libs AI', 'Talk To Me'];
 
   return (
     <div className="experience-selector">

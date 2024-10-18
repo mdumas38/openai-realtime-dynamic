@@ -4,10 +4,11 @@ import MainMenu from './components/MainMenu/MainMenu';
 import { SelectionMenu } from './components/SelectionMenu/SelectionMenu';
 import { Settings } from './components/Settings/Settings';
 import { ExperienceSelector } from './components/ExperienceSelector/ExperienceSelector';
+import { TalkToMeGame } from './components/TalkToMeGame/TalkToMeGame';
 import './App.scss';
 
 // Define the possible screen types
-type ScreenType = 'mainMenu' | 'selectionMenu' | 'settings' | 'experienceSelector' | 'gameEngine';
+type ScreenType = 'mainMenu' | 'selectionMenu' | 'settings' | 'experienceSelector' | 'gameEngine' | 'talkToMeGame';
 
 // Define the settings type
 export interface GameSettings {
@@ -43,7 +44,11 @@ function App() {
   // Function to handle experience selection
   const handleExperienceSelect = (experience: string) => {
     setSelectedExperience(experience);
-    navigateTo('gameEngine');
+    if (experience === 'Talk To Me') {
+      navigateTo('talkToMeGame');
+    } else {
+      navigateTo('gameEngine');
+    }
   };
 
   // Function to handle quitting the game
@@ -90,6 +95,8 @@ function App() {
             onQuit={handleQuitGame}
           />
         );
+      case 'talkToMeGame':
+        return <TalkToMeGame onQuit={handleQuitGame} />;
       default:
         return <div>Unknown screen</div>;
     }
