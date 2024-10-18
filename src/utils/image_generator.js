@@ -1,4 +1,4 @@
-import * as fal from '@fal-ai/serverless-client';
+import { fal } from '@fal-ai/client';
 
 // Set up FAL client with your API key
 fal.config({
@@ -27,7 +27,7 @@ export async function generateImage(prompt, generatorType) {
       generatorModel = 'fal-ai/flux/dev';
     }
 
-    const result = await fal.subscribe(generatorModel, {
+    const { data, requestId } = await fal.subscribe(generatorModel, {
       input: {
         prompt: prompt,
         num_images: 1,
@@ -41,12 +41,20 @@ export async function generateImage(prompt, generatorType) {
       },
     });
 
-    console.log('Image generated:', result);
+    console.log('Image generated:', data);
+    console.log('Request ID:', requestId);
     console.log('Used generator:', generatorModel);
-    const imageUrl = result.images[0].url;
-    return imageUrl;
+    return { imageUrl: data.images[0].url, requestId: requestId };
   } catch (error) {
     console.error('Error generating image:', error);
     throw error;
   }
 }
+
+//example usage
+generateImage('Ro', 'enhanced').then((result) => {
+  console.log('Image generated:', result);
+}).catch((error) => {
+  console.error('Error generating image:', error);
+});
+

@@ -1,66 +1,42 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 
-import './Toggle.scss';
-
-export function Toggle({
-  defaultValue = false,
-  values,
-  labels,
-  onChange = () => {},
-}: {
-  defaultValue?: string | boolean;
+interface ToggleProps {
+  defaultValue?: boolean;
   values?: string[];
   labels?: string[];
   onChange?: (isEnabled: boolean, value: string) => void;
-}) {
-  if (typeof defaultValue === 'string') {
-    defaultValue = !!Math.max(0, (values || []).indexOf(defaultValue));
-  }
+}
 
-  const leftRef = useRef<HTMLDivElement>(null);
-  const rightRef = useRef<HTMLDivElement>(null);
-  const bgRef = useRef<HTMLDivElement>(null);
-  const [value, setValue] = useState<boolean>(defaultValue);
+export function Toggle({
+  defaultValue = false,
+  values = [],
+  labels = [],
+  onChange = () => {},
+}: ToggleProps) {
+  const [isEnabled, setIsEnabled] = useState(defaultValue);
 
-  const toggleValue = () => {
-    const v = !value;
-    const index = +v;
-    setValue(v);
-    onChange(v, (values || [])[index]);
+  const handleToggle = () => {
+    const newValue = !isEnabled;
+    setIsEnabled(newValue);
+    onChange(newValue, values[newValue ? 1 : 0]);
   };
 
-  useEffect(() => {
-    const leftEl = leftRef.current;
-    const rightEl = rightRef.current;
-    const bgEl = bgRef.current;
-    if (leftEl && rightEl && bgEl) {
-      if (value) {
-        bgEl.style.left = rightEl.offsetLeft + 'px';
-        bgEl.style.width = rightEl.offsetWidth + 'px';
-      } else {
-        bgEl.style.left = '';
-        bgEl.style.width = leftEl.offsetWidth + 'px';
-      }
-    }
-  }, [value]);
-
   return (
-    <div
-      data-component="Toggle"
-      onClick={toggleValue}
-      data-enabled={value.toString()}
-    >
-      {labels && (
-        <div className="label left" ref={leftRef}>
-          {labels[0]}
-        </div>
-      )}
-      {labels && (
-        <div className="label right" ref={rightRef}>
-          {labels[1]}
-        </div>
-      )}
-      <div className="toggle-background" ref={bgRef}></div>
+    <div className="flex items-center space-x-2">
+      <span className={`text-sm ${isEnabled ? 'text-gray-500' : 'font-medium'}`}>{labels[0]}</span>
+      <button
+        onClick={handleToggle}
+        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
+          isEnabled ? 'bg-indigo-600' : 'bg-gray-200'
+        }`}
+      >
+        <span
+          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+            isEnabled ? 'translate-x-6' : 'translate-x-1'
+          }`}
+        />
+      </button>
+      <span className={`text-sm ${isEnabled ? 'font-medium' : 'text-gray-500'}`}>{labels[1]}</span>
     </div>
   );
 }

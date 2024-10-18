@@ -17,8 +17,8 @@ export const PromptProcessor = ({ conversationSummary, generatorType }) => {
           const imagePrompt = await generateImagePrompt(conversationSummary);
           const newImages = [];
           for (let i = 0; i < 4; i++) {
-            const imageUrl = await generateImage(imagePrompt, generatorType);
-            newImages.push({ url: imageUrl, prompt: imagePrompt, key: Date.now() + i });
+            const { imageUrl, requestId } = await generateImage(imagePrompt, generatorType);
+            newImages.push({ url: imageUrl, prompt: imagePrompt, key: requestId });
           }
           setGeneratedImages(prevImages => [...newImages, ...prevImages.slice(0, 16)]);
           setCurrentImageIndex(0);
