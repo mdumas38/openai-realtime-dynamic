@@ -3,58 +3,222 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
-  background-color: #000;
-  color: #fff;
+  min-height: 100vh;
+  background-color: black;
+  color: white;
+  padding: 1rem;
+  background-image: linear-gradient(to bottom, #000000, #1a0000);
 
   .game-phase {
     text-align: center;
     margin-bottom: 2rem;
+    width: 100%;
+    max-width: 90vw;
 
     h2 {
-      font-size: 2rem;
+      font-size: 1.875rem;
+      font-weight: bold;
       margin-bottom: 1rem;
+      color: #dc2626;
+      animation: pulse 2s infinite;
+      text-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
+    }
+
+    p {
+      font-size: 1.125rem;
+      margin-bottom: 1rem;
+      color: #d1d5db;
     }
 
     img {
       max-width: 100%;
       height: auto;
       cursor: pointer;
+      transition: all 0.3s ease-in-out;
+      filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.5));
+
+      &:hover {
+        transform: scale(1.05);
+      }
+    }
+
+    .generated-image-container {
+      width: 100%;
+      height: 70vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+
+      .bot-image {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
     }
 
     &.intro {
       img {
-        max-width: 200px;
+        max-width: 100%;
+        max-height: 70vh;
+        margin-left: auto;
+        margin-right: auto;
       }
     }
 
     &.escalation {
-      .npc-image {
-        max-width: 300px;
-        transition: all 0.5s ease-in-out;
+      .bot-image {
+        max-width: 100%;
+        max-height: 70vh;
+        margin-left: auto;
+        margin-right: auto;
+        animation: glitch 1s infinite;
       }
     }
 
-    &.ending {
-      img {
-        max-width: 400px;
+    &.climax {
+      .bot-image {
+        max-width: 100%;
+        max-height: 70vh;
+        margin-left: auto;
+        margin-right: auto;
+        animation: shake 0.5s infinite;
       }
+    }
+
+    &.finale {
+      position: relative;
+
+      .jump-scare {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.5s ease-in-out;
+      }
+
+      .game-over {
+        font-size: 2.25rem;
+        font-weight: bold;
+        color: #dc2626;
+        margin-top: 2rem;
+        text-shadow: 0 0 20px rgba(255, 0, 0, 0.9);
+        animation: pulse 2s infinite;
+      }
+    }
+  }
+
+  .environmental-effect {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+
+    &.flickering_lights {
+      animation: flicker 0.1s infinite;
+    }
+
+    &.audio_glitches {
+      animation: audioGlitch 0.5s infinite;
+    }
+
+    &.erratic_visuals {
+      animation: erratic 0.5s infinite;
+    }
+
+    &.distorted_audio {
+      animation: distortAudio 1s infinite;
+    }
+
+    &.screen_glitches {
+      animation: glitch 0.2s infinite;
+    }
+
+    &.voice_distortion {
+      animation: distortVoice 0.3s infinite;
     }
   }
 
   .game-controls {
+    margin-top: 2rem;
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 20px;
 
-    .player-input {
-      margin-top: 10px;
-      padding: 10px;
-      background-color: rgba(255, 255, 255, 0.1);
-      border-radius: 5px;
-      max-width: 80%;
-      word-wrap: break-word;
+    button {
+      padding: 0.75rem 1.5rem;
+      font-size: 1.125rem;
+      font-weight: 600;
+      border-radius: 9999px;
+      transition: all 0.3s ease-in-out;
+      
+      &.action {
+        background-color: #dc2626;
+        color: white;
+        box-shadow: 0 0 15px rgba(255, 0, 0, 0.7);
+
+        &:hover {
+          background-color: #b91c1c;
+        }
+      }
+
+      &.alert {
+        background-color: #eab308;
+        color: black;
+        box-shadow: 0 0 15px rgba(255, 255, 0, 0.7);
+
+        &:hover {
+          background-color: #ca8a04;
+        }
+      }
     }
   }
+}
+
+@keyframes glitch {
+  0% { transform: translate(0) }
+  20% { transform: translate(-5px, 5px) }
+  40% { transform: translate(-5px, -5px) }
+  60% { transform: translate(5px, 5px) }
+  80% { transform: translate(5px, -5px) }
+  100% { transform: translate(0) }
+}
+
+@keyframes shake {
+  0% { transform: translate(1px, 1px) rotate(0deg) }
+  10% { transform: translate(-1px, -2px) rotate(-1deg) }
+  20% { transform: translate(-3px, 0px) rotate(1deg) }
+  30% { transform: translate(3px, 2px) rotate(0deg) }
+  40% { transform: translate(1px, -1px) rotate(1deg) }
+  50% { transform: translate(-1px, 2px) rotate(-1deg) }
+  60% { transform: translate(-3px, 1px) rotate(0deg) }
+  70% { transform: translate(3px, 1px) rotate(-1deg) }
+  80% { transform: translate(-1px, -1px) rotate(1deg) }
+  90% { transform: translate(1px, 2px) rotate(0deg) }
+  100% { transform: translate(1px, -2px) rotate(-1deg) }
+}
+
+@keyframes flicker {
+  0% { opacity: 1 }
+  50% { opacity: 0.5 }
+  100% { opacity: 1 }
+}
+
+@keyframes erratic {
+  0% { transform: scale(1) rotate(0deg) }
+  25% { transform: scale(1.05) rotate(5deg) }
+  50% { transform: scale(0.95) rotate(-5deg) }
+  75% { transform: scale(1.05) rotate(5deg) }
+  100% { transform: scale(1) rotate(0deg) }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0 }
+  to { opacity: 1 }
+}
+
+@keyframes pulse {
+  0% { opacity: 1 }
+  50% { opacity: 0.5 }
+  100% { opacity: 1 }
 }

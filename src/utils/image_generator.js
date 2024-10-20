@@ -52,9 +52,9 @@ export async function generateImage(prompt, generatorType) {
 }
 
 //example usage
-generateImage('Ro', 'enhanced').then((result) => {
-  console.log('Image generated:', result);
-}).catch((error) => {
-  console.error('Error generating image:', error);
-});
+// generateImage('Ro', 'enhanced').then((result) => {
+//   console.log('Image generated:', result);
+// }).catch((error) => {
+//   console.error('Error generating image:', error);
+// });
 
