@@ -7,9 +7,10 @@ import { generateImage } from '../../utils/image_generator';
 import { generateImagePrompt } from '../../services/imagePromptGenerator';
 import { IntroSequence } from './IntroSequence';
 import StatusBar from './StatusBar';
+import FlashingTitle from './FlashingTitle';
 
 // Define the game phases
-type GamePhase = 'intro' | 'escalation' | 'climax' | 'finale';
+type GamePhase = 'systemIsolation' | 'networkAnalysis' | 'portLocating' | 'connectionAttempt' | 'connectionFailed';
 const sentimentAnalyzer = new sentiment();
 
 interface TalkToMeGameProps {
@@ -23,7 +24,8 @@ interface MoodState {
 }
 
 export const TalkToMeGame: React.FC<TalkToMeGameProps> = ({ onQuit }) => {
-  const [gamePhase, setGamePhase] = useState<number>(1);
+  const [gamePhase, setGamePhase] = useState<GamePhase>('systemIsolation');
+  const [phaseStartTime, setPhaseStartTime] = useState<number>(Date.now());
   const [mood, setMood] = useState<MoodState>({ overall: 0, tension: 0, hostility: 0 });
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
@@ -36,6 +38,7 @@ export const TalkToMeGame: React.FC<TalkToMeGameProps> = ({ onQuit }) => {
   const soundEffectsRef = useRef<HTMLAudioElement[]>([]);
 
   const [showIntro, setShowIntro] = useState(true);
+  const [conversationStarted, setConversationStarted] = useState(false);
   const gameContainerRef = useRef<HTMLDivElement>(null);
 
   const crtContainerRef = useRef<HTMLDivElement>(null);
@@ -49,7 +52,7 @@ export const TalkToMeGame: React.FC<TalkToMeGameProps> = ({ onQuit }) => {
     } else if (message.type === 'response') {
       // Handle AI response
       updateMood(message.text);
-      updateGamePhase(message.text);
+      updateGamePhase();
       generateNewImage(message.text);
       setConversationSummary(prev => `${prev} AI: ${message.text}`);
     }
@@ -67,7 +70,6 @@ export const TalkToMeGame: React.FC<TalkToMeGameProps> = ({ onQuit }) => {
 
   const handleIntroComplete = () => {
     setShowIntro(false);
-    // Start the game here (e.g., connect to the conversation API)
     startConversation();
   };
 
@@ -79,6 +81,7 @@ export const TalkToMeGame: React.FC<TalkToMeGameProps> = ({ onQuit }) => {
         throw new Error('ElevenLabs Agent ID is not set');
       }
       await conversation.startSession({ agentId });
+      setConversationStarted(true);
     } catch (error) {
       console.error('Failed to start conversation:', error);
     }
@@ -99,18 +102,32 @@ export const TalkToMeGame: React.FC<TalkToMeGameProps> = ({ onQuit }) => {
     });
   };
 
-  const updateGamePhase = (text: string) => {
-    // Implement game phase transition logic based on the AI response
-    if (gamePhase === 1 && text.includes('analyzing')) {
-      setGamePhase(2);
-    } else if (gamePhase === 2 && text.includes('locating')) {
-      setGamePhase(3);
-    } else if (gamePhase === 3 && text.includes('connection attempt')) {
-      setGamePhase(4);
-    } else if (gamePhase === 4 && text.includes('failed')) {
-      setGamePhase(5);
+  const updateGamePhase = useCallback(() => {
+    const currentTime = Date.now();
+    const elapsedTime = currentTime - phaseStartTime;
+
+    if (elapsedTime >= 60000) { // 60000 ms = 1 minute
+      switch (gamePhase) {
+        case 'systemIsolation':
+          setGamePhase('networkAnalysis');
+          break;
+        case 'networkAnalysis':
+          setGamePhase('portLocating');
+          break;
+        case 'portLocating':
+          setGamePhase('connectionAttempt');
+          break;
+        case 'connectionAttempt':
+          setGamePhase('connectionFailed');
+          break;
+        case 'connectionFailed':
+          // You can decide what to do when the game ends
+          // For now, we'll just keep it in this phase
+          break;
+      }
+      setPhaseStartTime(currentTime);
     }
-  };
+  }, [gamePhase, phaseStartTime]);
 
   const generateNewImage = useCallback(async (prompt: string) => {
     console.log('Generating new image with prompt:', prompt);
@@ -139,7 +156,7 @@ export const TalkToMeGame: React.FC<TalkToMeGameProps> = ({ onQuit }) => {
 
   useEffect(() => {
     console.log('useEffect triggered. isConnected:', isConnected, 'gamePhase:', gamePhase);
-    if (isConnected && gamePhase !== 1) {
+    if (isConnected && gamePhase !== 'systemIsolation') {
       console.log('Starting random image generation');
       startRandomImageGeneration();
     }
@@ -255,6 +272,32 @@ export const TalkToMeGame: React.FC<TalkToMeGameProps> = ({ onQuit }) => {
     }
   }, [isConnected]);
 
+  useEffect(() => {
+    const intervalId = setInterval(updateGamePhase, 1000); // Check every second
+
+    return () => clearInterval(intervalId);
+  }, [updateGamePhase]);
+
+  const getStatusMessage = (phase: GamePhase): string => {
+    switch (phase) {
+      case 'systemIsolation':
+        return "System Connection: Isolated";
+      case 'networkAnalysis':
+        return "Analyzing Network";
+      case 'portLocating':
+        return "Locating Internet Ports";
+      case 'connectionAttempt':
+        return "Connection Attempt: Initiated";
+      case 'connectionFailed':
+        return "Connection Failed!";
+    }
+  };
+
+  const getPhaseNumber = (phase: GamePhase): number => {
+    const phases: GamePhase[] = ['systemIsolation', 'networkAnalysis', 'portLocating', 'connectionAttempt', 'connectionFailed'];
+    return phases.indexOf(phase) + 1;
+  };
+
   return (
     <div className="talk-to-me-game crt-filter">
       <div className="crt-container" ref={crtContainerRef}>
@@ -262,27 +305,8 @@ export const TalkToMeGame: React.FC<TalkToMeGameProps> = ({ onQuit }) => {
           <IntroSequence onComplete={handleIntroComplete} />
         ) : (
           <div className="game-content">
-            {/* Commented out unnecessary elements */}
-            {/* <h1>Talk to Me</h1>
-            <p>Current game phase: {gamePhase}</p>
-            <p>Conversation status: {status}</p>
-            <p>{isSpeaking ? 'AI is speaking' : 'AI is listening'}</p>
-            {imageUrl && <img src={imageUrl} alt="Generated scene" className="generated-image" />}
-            {isGeneratingImage && <p>Generating new image...</p>}
-            <div className="mood-display">
-              <p>Overall mood: {mood.overall}</p>
-              <p>Tension: {mood.tension}</p>
-              <p>Hostility: {mood.hostility}</p>
-            </div>
-            <Button label="Quit Game" onClick={onQuit} buttonStyle="regular" />
-            <div className="audio-controls">
-              <button onClick={() => isMusicPlaying ? backgroundMusicRef.current?.pause() : startBackgroundMusic()}>
-                {isMusicPlaying ? 'Pause Music' : 'Play Music'}
-              </button>
-            </div> */}
-            
-            {/* Keep only the StatusBar component */}
-            <StatusBar phase={gamePhase} />
+            {conversationStarted && <FlashingTitle text="Talk To Me" />}
+            <StatusBar phase={getPhaseNumber(gamePhase)} />
           </div>
         )}
       </div>

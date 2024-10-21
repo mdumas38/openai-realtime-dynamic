@@ -242,6 +242,20 @@
     &.hidden { opacity: 0; }
     &.visible { opacity: 1; }
   }
+
+  // Add this new rule
+  .flashing-title {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 4rem;
+    font-weight: bold;
+    color: #ff0000;
+    text-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
+    animation: flash 3s infinite alternate;
+    z-index: 10;
+  }
 }
 
 @keyframes typeWriter {
@@ -307,4 +321,17 @@
 @keyframes pulse {
   0%, 100% { opacity: 1 }
   50% { opacity: 0.5 }
+}
+
+@keyframes flash {
+  0%, 100% {
+    opacity: 0.9;
+    color: #ff0000;
+    text-shadow: 0 0 15px rgba(255, 0, 0, 0.7);
+  }
+  50% {
+    opacity: 0.7;
+    color: #cc0000;
+    text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+  }
 }
