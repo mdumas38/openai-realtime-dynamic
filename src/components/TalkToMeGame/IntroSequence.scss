@@ -1,0 +1,15 @@
+.intro-sequence {
+  // ... existing styles ...
+
+  .intro-line {
+    font-size: 24px; // Increase from previous value
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+
+  .cursor {
+    font-size: 24px; // Match the intro-line font size
+    // ... other existing styles ...
+  }
+}
+

@@ -1,0 +1,18 @@
+.status-bar {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: #0f0;
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-family: 'VT323', monospace;
+  font-size: 24px;
+  z-index: 1000;
+
+  .blinking-dots {
+    display: inline-block;
+    width: 36px;  // Adjust this value based on your font size
+    text-align: left;
+  }
+}

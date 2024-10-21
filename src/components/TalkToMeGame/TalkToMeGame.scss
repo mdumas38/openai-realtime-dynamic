@@ -3,11 +3,65 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
-  background-color: black;
-  color: white;
-  padding: 1rem;
-  background-image: linear-gradient(to bottom, #000000, #1a0000);
+  width: 100vw;
+  height: 100vh;
+  margin: 0 auto;
+  overflow: hidden;
+  background-color: #2a2a2a;
+  color: #0f0;
+  font-family: 'VT323', monospace;
+  position: relative;
+
+  .crt-container {
+    width: 75vh;
+    height: 100vh;
+    max-width: 100vw;
+    position: relative;
+    overflow: hidden;
+    background-color: black;
+  }
+
+  &.crt-filter {
+    &::before {
+      content: " ";
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+      z-index: 2;
+      background-size: 100% 2px, 3px 100%;
+      pointer-events: none;
+    }
+
+    &::after {
+      content: " ";
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      background: rgba(18, 16, 16, 0.1);
+      opacity: 0;
+      z-index: 2;
+      pointer-events: none;
+      animation: flicker 0.15s infinite;
+    }
+  }
+
+  .game-content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    padding: 20px;
+    box-sizing: border-box;
+    filter: brightness(1.1) contrast(1.1) saturate(1.3);
+  }
 
   .game-phase {
     text-align: center;
@@ -61,8 +115,7 @@
       img {
         max-width: 100%;
         max-height: 70vh;
-        margin-left: auto;
-        margin-right: auto;
+        margin: 0 auto;
       }
     }
 
@@ -70,8 +123,7 @@
       .bot-image {
         max-width: 100%;
         max-height: 70vh;
-        margin-left: auto;
-        margin-right: auto;
+        margin: 0 auto;
         animation: glitch 1s infinite;
       }
     }
@@ -80,8 +132,7 @@
       .bot-image {
         max-width: 100%;
         max-height: 70vh;
-        margin-left: auto;
-        margin-right: auto;
+        margin: 0 auto;
         animation: shake 0.5s infinite;
       }
     }
@@ -114,29 +165,12 @@
     inset: 0;
     pointer-events: none;
 
-    &.flickering_lights {
-      animation: flicker 0.1s infinite;
-    }
-
-    &.audio_glitches {
-      animation: audioGlitch 0.5s infinite;
-    }
-
-    &.erratic_visuals {
-      animation: erratic 0.5s infinite;
-    }
-
-    &.distorted_audio {
-      animation: distortAudio 1s infinite;
-    }
-
-    &.screen_glitches {
-      animation: glitch 0.2s infinite;
-    }
-
-    &.voice_distortion {
-      animation: distortVoice 0.3s infinite;
-    }
+    &.flickering_lights { animation: flicker 0.1s infinite; }
+    &.audio_glitches { animation: audioGlitch 0.5s infinite; }
+    &.erratic_visuals { animation: erratic 0.5s infinite; }
+    &.distorted_audio { animation: distortAudio 1s infinite; }
+    &.screen_glitches { animation: glitch 0.2s infinite; }
+    &.voice_distortion { animation: distortVoice 0.3s infinite; }
   }
 
   .game-controls {
@@ -173,52 +207,104 @@
       }
     }
   }
+
+  .intro-sequence {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    align-items: flex-start;
+    padding: 50px 60px;
+    box-sizing: border-box;
+    overflow: hidden;
+    font-family: 'VT323', monospace;
+    font-size: 1.8rem;
+    line-height: 1.2;
+    color: #0f0;
+  }
+
+  .intro-line {
+    width: 100%;
+    white-space: normal; // Changed from nowrap to allow wrapping
+    overflow: hidden;
+    // animation: typeWriter 0.5s steps(40, end);
+    margin-bottom: 10px; // Added for better spacing between lines
+  }
+
+  .cursor {
+    width: 0.6em;
+    height: 1em;
+    background-color: #0f0;
+    animation: blink 0.7s infinite;
+    
+    &.hidden { opacity: 0; }
+    &.visible { opacity: 1; }
+  }
 }
 
-@keyframes glitch {
-  0% { transform: translate(0) }
-  20% { transform: translate(-5px, 5px) }
-  40% { transform: translate(-5px, -5px) }
-  60% { transform: translate(5px, 5px) }
-  80% { transform: translate(5px, -5px) }
-  100% { transform: translate(0) }
+@keyframes typeWriter {
+  from { width: 0; }
+  to { width: 100%; }
 }
 
-@keyframes shake {
-  0% { transform: translate(1px, 1px) rotate(0deg) }
-  10% { transform: translate(-1px, -2px) rotate(-1deg) }
-  20% { transform: translate(-3px, 0px) rotate(1deg) }
-  30% { transform: translate(3px, 2px) rotate(0deg) }
-  40% { transform: translate(1px, -1px) rotate(1deg) }
-  50% { transform: translate(-1px, 2px) rotate(-1deg) }
-  60% { transform: translate(-3px, 1px) rotate(0deg) }
-  70% { transform: translate(3px, 1px) rotate(-1deg) }
-  80% { transform: translate(-1px, -1px) rotate(1deg) }
-  90% { transform: translate(1px, 2px) rotate(0deg) }
-  100% { transform: translate(1px, -2px) rotate(-1deg) }
-}
-
-@keyframes flicker {
-  0% { opacity: 1 }
-  50% { opacity: 0.5 }
-  100% { opacity: 1 }
-}
-
-@keyframes erratic {
-  0% { transform: scale(1) rotate(0deg) }
-  25% { transform: scale(1.05) rotate(5deg) }
-  50% { transform: scale(0.95) rotate(-5deg) }
-  75% { transform: scale(1.05) rotate(5deg) }
-  100% { transform: scale(1) rotate(0deg) }
+@keyframes blink {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0 }
-  to { opacity: 1 }
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes flicker {
+  0% { opacity: 0.27861; }
+  5% { opacity: 0.34769; }
+  10% { opacity: 0.23604; }
+  15% { opacity: 0.90626; }
+  20% { opacity: 0.18128; }
+  25% { opacity: 0.83891; }
+  30% { opacity: 0.65583; }
+  35% { opacity: 0.67807; }
+  40% { opacity: 0.26559; }
+  45% { opacity: 0.84693; }
+  50% { opacity: 0.96019; }
+  55% { opacity: 0.08594; }
+  60% { opacity: 0.20313; }
+  65% { opacity: 0.71988; }
+  70% { opacity: 0.53455; }
+  75% { opacity: 0.37288; }
+  80% { opacity: 0.71428; }
+  85% { opacity: 0.70419; }
+  90% { opacity: 0.7003; }
+  95% { opacity: 0.36108; }
+  100% { opacity: 0.24387; }
+}
+
+@keyframes glitch {
+  0%, 100% { transform: translate(0) }
+  20% { transform: translate(-5px, 5px) }
+  40% { transform: translate(-5px, -5px) }
+   60% { transform: translate(5px, 5px) }
+  80% { transform: translate(5px, -5px) }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translate(1px, 1px) rotate(0deg) }
+  10%, 30%, 50%, 70%, 90% { transform: translate(-1px, -2px) rotate(-1deg) }
+  20%, 40%, 60%, 80% { transform: translate(-3px, 0px) rotate(1deg) }
+}
+
+@keyframes erratic {
+  0%, 100% { transform: scale(1) rotate(0deg) }
+  25% { transform: scale(1.05) rotate(5deg) }
+  50% { transform: scale(0.95) rotate(-5deg) }
+  75% { transform: scale(1.05) rotate(5deg) }
 }
 
 @keyframes pulse {
-  0% { opacity: 1 }
+  0%, 100% { opacity: 1 }
   50% { opacity: 0.5 }
-  100% { opacity: 1 }
 }

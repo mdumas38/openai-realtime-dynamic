@@ -5,6 +5,8 @@ import './TalkToMeGame.scss';
 import sentiment from 'sentiment';
 import { generateImage } from '../../utils/image_generator';
 import { generateImagePrompt } from '../../services/imagePromptGenerator';
+import { IntroSequence } from './IntroSequence';
+import StatusBar from './StatusBar';
 
 // Define the game phases
 type GamePhase = 'intro' | 'escalation' | 'climax' | 'finale';
@@ -21,7 +23,7 @@ interface MoodState {
 }
 
 export const TalkToMeGame: React.FC<TalkToMeGameProps> = ({ onQuit }) => {
-  const [gamePhase, setGamePhase] = useState<GamePhase>('intro');
+  const [gamePhase, setGamePhase] = useState<number>(1);
   const [mood, setMood] = useState<MoodState>({ overall: 0, tension: 0, hostility: 0 });
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
@@ -32,6 +34,11 @@ export const TalkToMeGame: React.FC<TalkToMeGameProps> = ({ onQuit }) => {
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
   const backgroundMusicRef = useRef<HTMLAudioElement | null>(null);
   const soundEffectsRef = useRef<HTMLAudioElement[]>([]);
+
+  const [showIntro, setShowIntro] = useState(true);
+  const gameContainerRef = useRef<HTMLDivElement>(null);
+
+  const crtContainerRef = useRef<HTMLDivElement>(null);
 
   const handleMessage = useCallback((message: any) => {
     // Handle different types of messages (user transcription, AI response, etc.)
@@ -58,27 +65,24 @@ export const TalkToMeGame: React.FC<TalkToMeGameProps> = ({ onQuit }) => {
   const { status, isSpeaking } = conversation;
   const isConnected = status === 'connected';
 
-  useEffect(() => {
-    const startConversation = async () => {
-      try {
-        await navigator.mediaDevices.getUserMedia({ audio: true });
-        const agentId = process.env.REACT_APP_ELEVENLABS_AGENT_ID;
-        if (!agentId) {
-          throw new Error('ElevenLabs Agent ID is not set');
-        }
-        await conversation.startSession({ agentId });
-      } catch (error) {
-        console.error('Failed to start conversation:', error);
-      }
-    };
-
+  const handleIntroComplete = () => {
+    setShowIntro(false);
+    // Start the game here (e.g., connect to the conversation API)
     startConversation();
+  };
 
-    // Only end the session when the component unmounts
-    return () => {
-      conversation.endSession();
-    };
-  }, []); // Empty dependency array means this effect runs once on mount and cleanup on unmount
+  const startConversation = async () => {
+    try {
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+      const agentId = process.env.REACT_APP_ELEVENLABS_AGENT_ID;
+      if (!agentId) {
+        throw new Error('ElevenLabs Agent ID is not set');
+      }
+      await conversation.startSession({ agentId });
+    } catch (error) {
+      console.error('Failed to start conversation:', error);
+    }
+  };
 
   const updateMood = (text: string) => {
     const sentimentResult = sentimentAnalyzer.analyze(text);
@@ -97,12 +101,14 @@ export const TalkToMeGame: React.FC<TalkToMeGameProps> = ({ onQuit }) => {
 
   const updateGamePhase = (text: string) => {
     // Implement game phase transition logic based on the AI response
-    if (gamePhase === 'intro' && text.includes('escalation')) {
-      setGamePhase('escalation');
-    } else if (gamePhase === 'escalation' && text.includes('climax')) {
-      setGamePhase('climax');
-    } else if (gamePhase === 'climax' && text.includes('finale')) {
-      setGamePhase('finale');
+    if (gamePhase === 1 && text.includes('analyzing')) {
+      setGamePhase(2);
+    } else if (gamePhase === 2 && text.includes('locating')) {
+      setGamePhase(3);
+    } else if (gamePhase === 3 && text.includes('connection attempt')) {
+      setGamePhase(4);
+    } else if (gamePhase === 4 && text.includes('failed')) {
+      setGamePhase(5);
     }
   };
 
@@ -133,7 +139,7 @@ export const TalkToMeGame: React.FC<TalkToMeGameProps> = ({ onQuit }) => {
 
   useEffect(() => {
     console.log('useEffect triggered. isConnected:', isConnected, 'gamePhase:', gamePhase);
-    if (isConnected && gamePhase !== 'intro') {
+    if (isConnected && gamePhase !== 1) {
       console.log('Starting random image generation');
       startRandomImageGeneration();
     }
@@ -148,7 +154,7 @@ export const TalkToMeGame: React.FC<TalkToMeGameProps> = ({ onQuit }) => {
   const startBackgroundMusic = useCallback(() => {
     if (backgroundMusicRef.current) {
       backgroundMusicRef.current.loop = true;
-      backgroundMusicRef.current.volume = 0.3; // Adjust volume as needed
+      backgroundMusicRef.current.volume = 0.1; // Adjust volume as needed
       backgroundMusicRef.current.play().then(() => {
         setIsMusicPlaying(true);
       }).catch(error => console.error("Error playing background music:", error));
@@ -167,13 +173,16 @@ export const TalkToMeGame: React.FC<TalkToMeGameProps> = ({ onQuit }) => {
   useEffect(() => {
     // Set up background music
     backgroundMusicRef.current = new Audio('/BackingTracks/Intro_Background.wav');
+    backgroundMusicRef.current.loop = true;
     
     // Set up sound effects
     const soundEffectFiles = ['scary_whispers_1.mp3', 'scary_whispers_2.mp3', 'scary_whispers_3.mp3', 'scary_whispers_4.mp3'];
     soundEffectsRef.current = soundEffectFiles.map(file => new Audio(`/SoundEffects/${file}`));
     
-    // Start background music
-    startBackgroundMusic();
+    // Start background music only when connected
+    if (isConnected) {
+      startBackgroundMusic();
+    }
     
     // Clean up function
     return () => {
@@ -183,7 +192,7 @@ export const TalkToMeGame: React.FC<TalkToMeGameProps> = ({ onQuit }) => {
       }
       soundEffectsRef.current = [];
     };
-  }, [startBackgroundMusic]);
+  }, [isConnected, startBackgroundMusic]);
 
   useEffect(() => {
     if (isConnected) {
@@ -195,24 +204,87 @@ export const TalkToMeGame: React.FC<TalkToMeGameProps> = ({ onQuit }) => {
     }
   }, [isConnected, gamePhase, playRandomSoundEffect]);
 
+  useEffect(() => {
+    if (gameContainerRef.current) {
+      gameContainerRef.current.style.width = '800px';
+      gameContainerRef.current.style.height = '600px';
+    }
+  }, []);
+
+  useEffect(() => {
+    const resizeCrtContainer = () => {
+      if (crtContainerRef.current) {
+        const height = window.innerHeight;
+        const width = (height * 4) / 3; // 4:3 aspect ratio
+        crtContainerRef.current.style.width = `${Math.min(width, window.innerWidth)}px`;
+        crtContainerRef.current.style.height = `${height}px`;
+      }
+    };
+
+    resizeCrtContainer();
+    window.addEventListener('resize', resizeCrtContainer);
+
+    return () => {
+      window.removeEventListener('resize', resizeCrtContainer);
+    };
+  }, []);
+
+  useEffect(() => {
+    backgroundMusicRef.current = new Audio('/BackingTracks/Intro_Background.wav');
+    backgroundMusicRef.current.loop = true;
+
+    return () => {
+      if (backgroundMusicRef.current) {
+        backgroundMusicRef.current.pause();
+        backgroundMusicRef.current = null;
+      }
+    };
+  }, []);
+
+  const playBackgroundMusic = () => {
+    if (backgroundMusicRef.current && !isMusicPlaying) {
+      backgroundMusicRef.current.play()
+        .then(() => setIsMusicPlaying(true))
+        .catch(error => console.error("Error playing background music:", error));
+    }
+  };
+
+  useEffect(() => {
+    if (isConnected) {
+      playBackgroundMusic();
+    }
+  }, [isConnected]);
+
   return (
-    <div className="talk-to-me-game">
-      <h1>Talk to Me</h1>
-      <p>Current game phase: {gamePhase}</p>
-      <p>Conversation status: {status}</p>
-      <p>{isSpeaking ? 'AI is speaking' : 'AI is listening'}</p>
-      {imageUrl && <img src={imageUrl} alt="Generated scene" className="generated-image" />}
-      {isGeneratingImage && <p>Generating new image...</p>}
-      <div className="mood-display">
-        <p>Overall mood: {mood.overall}</p>
-        <p>Tension: {mood.tension}</p>
-        <p>Hostility: {mood.hostility}</p>
-      </div>
-      <Button label="Quit Game" onClick={onQuit} buttonStyle="regular" />
-      <div className="audio-controls">
-        <button onClick={() => isMusicPlaying ? backgroundMusicRef.current?.pause() : startBackgroundMusic()}>
-          {isMusicPlaying ? 'Pause Music' : 'Play Music'}
-        </button>
+    <div className="talk-to-me-game crt-filter">
+      <div className="crt-container" ref={crtContainerRef}>
+        {showIntro ? (
+          <IntroSequence onComplete={handleIntroComplete} />
+        ) : (
+          <div className="game-content">
+            {/* Commented out unnecessary elements */}
+            {/* <h1>Talk to Me</h1>
+            <p>Current game phase: {gamePhase}</p>
+            <p>Conversation status: {status}</p>
+            <p>{isSpeaking ? 'AI is speaking' : 'AI is listening'}</p>
+            {imageUrl && <img src={imageUrl} alt="Generated scene" className="generated-image" />}
+            {isGeneratingImage && <p>Generating new image...</p>}
+            <div className="mood-display">
+              <p>Overall mood: {mood.overall}</p>
+              <p>Tension: {mood.tension}</p>
+              <p>Hostility: {mood.hostility}</p>
+            </div>
+            <Button label="Quit Game" onClick={onQuit} buttonStyle="regular" />
+            <div className="audio-controls">
+              <button onClick={() => isMusicPlaying ? backgroundMusicRef.current?.pause() : startBackgroundMusic()}>
+                {isMusicPlaying ? 'Pause Music' : 'Play Music'}
+              </button>
+            </div> */}
+            
+            {/* Keep only the StatusBar component */}
+            <StatusBar phase={gamePhase} />
+          </div>
+        )}
       </div>
     </div>
   );
