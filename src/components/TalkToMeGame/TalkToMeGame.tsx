@@ -8,6 +8,7 @@ import { generateImagePrompt } from '../../services/imagePromptGenerator';
 import { IntroSequence } from './IntroSequence';
 import StatusBar from './StatusBar';
 import FlashingTitle from './FlashingTitle';
+import { EndingSequence } from './EndingSequence';
 
 // Define the game phases
 type GamePhase = 'systemIsolation' | 'networkAnalysis' | 'portLocating' | 'connectionAttempt' | 'connectionFailed';
@@ -42,6 +43,8 @@ export const TalkToMeGame: React.FC<TalkToMeGameProps> = ({ onQuit }) => {
   const gameContainerRef = useRef<HTMLDivElement>(null);
 
   const crtContainerRef = useRef<HTMLDivElement>(null);
+
+  const [showEndingSequence, setShowEndingSequence] = useState(false);
 
   const handleMessage = useCallback((message: any) => {
     // Handle different types of messages (user transcription, AI response, etc.)
@@ -121,8 +124,7 @@ export const TalkToMeGame: React.FC<TalkToMeGameProps> = ({ onQuit }) => {
           setGamePhase('connectionFailed');
           break;
         case 'connectionFailed':
-          // You can decide what to do when the game ends
-          // For now, we'll just keep it in this phase
+          setShowEndingSequence(true);
           break;
       }
       setPhaseStartTime(currentTime);
@@ -303,6 +305,8 @@ export const TalkToMeGame: React.FC<TalkToMeGameProps> = ({ onQuit }) => {
       <div className="crt-container" ref={crtContainerRef}>
         {showIntro ? (
           <IntroSequence onComplete={handleIntroComplete} />
+        ) : showEndingSequence ? (
+          <EndingSequence onComplete={onQuit} />
         ) : (
           <div className="game-content">
             {conversationStarted && <FlashingTitle text="Talk To Me" />}
