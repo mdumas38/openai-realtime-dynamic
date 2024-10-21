@@ -1,9 +1,9 @@
 import { fal } from '@fal-ai/client';
 
 // Set up FAL client with your API key
-fal.config({
-  credentials: '20966859-2b11-4368-80ef-f07f7c3dfe7e:034d9052404b797f91e055d7beaa753e',
-});
+// fal.config({
+//   credentials: process.env.REACT_APP_FAL_API_KEY,
+// });
 
 let currentImageGenerator = 'default';
 let useImageEnhancer = false;
