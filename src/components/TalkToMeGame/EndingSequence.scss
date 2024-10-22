@@ -7,15 +7,21 @@
   background-color: black;
   color: #ff0000;
   font-family: 'VT323', monospace;
-  font-size: 2rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  font-size: 1.5rem;
   z-index: 2000;
 
+  .console-output {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    max-width: 80%;
+  }
+
   .ending-line {
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .cursor {
@@ -32,4 +38,3 @@
     }
   }
 }
-

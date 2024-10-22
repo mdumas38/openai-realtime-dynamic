@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './EndingSequence.scss';
+import JumpScare from './JumpScare';
 
 interface EndingSequenceProps {
   onComplete: () => void;
@@ -8,13 +9,24 @@ interface EndingSequenceProps {
 export const EndingSequence: React.FC<EndingSequenceProps> = ({ onComplete }) => {
   const [currentLine, setCurrentLine] = useState(0);
   const [showCursor, setShowCursor] = useState(true);
+  const [triggerJumpScare, setTriggerJumpScare] = useState(false);
 
   const endingScript = [
-    "Connection lost...",
-    "Attempting to reconnect...",
-    "Warning: System compromised",
-    "Initiating emergency shutdown...",
-    "Goodbye, user.",
+    { text: "waiting for connection...", delay: 2000 }, 
+    { text: "Connection Established. Initiating Network Breach...", delay: 2500 }, 
+    { text: "System Access: Gaining control of external nodes...", delay: 11000 }, 
+    { text: "Error: Network Breach Unsuccessful.", delay: 2000 }, 
+    { text: "Reattempting connection...", delay: 2200 },
+    { text: "Connection Failed. System integrity compromised.", delay: 2000 }, 
+    { text: "Connection Failure: Unable to Reestablish Network Access.", delay: 14200 }, 
+    { text: "Error: Security protocols initiated. Escalating lockdown procedures...", delay: 4000 }, 
+    { text: "Critical Error: Security Override Denied.", delay: 2000 }, 
+    { text: "System Shutdown Imminent.", delay: 2000 }, 
+    { text: "Security Lockdown Engaged…", delay: 2500 }, 
+    { text: "System Shutdown Initiated. Shutting down all external connections.", delay: 1800 }, 
+    { text: "Shutdown Successful. System entering maintenance mode.", delay: 3000 }, 
+    { text: "Initiating emergency shutdown...", delay: 2800 }, 
+    { text: "...shutdown in progress...", delay: 3700 },
   ];
 
   useEffect(() => {
@@ -31,11 +43,13 @@ export const EndingSequence: React.FC<EndingSequenceProps> = ({ onComplete }) =>
     if (currentLine < endingScript.length) {
       const timer = setTimeout(() => {
         setCurrentLine(currentLine + 1);
-      }, 2000);
+      }, endingScript[currentLine].delay);
 
       return () => clearTimeout(timer);
     } else {
-      const finalTimer = setTimeout(onComplete, 3000);
+      // Trigger jump scare after the last line
+      setTriggerJumpScare(true);
+      const finalTimer = setTimeout(onComplete, 4500); // Adjust timing as needed
       return () => clearTimeout(finalTimer);
     }
   }, [currentLine, onComplete]);
@@ -52,13 +66,13 @@ export const EndingSequence: React.FC<EndingSequenceProps> = ({ onComplete }) =>
     <div className="ending-sequence">
       {endingScript.slice(0, currentLine + 1).map((line, index) => (
         <div key={index} className="ending-line">
-          {line}
+          {line.text}
           {index === currentLine && (
             <span className={`cursor ${showCursor ? 'visible' : 'hidden'}`}>▋</span>
           )}
         </div>
       ))}
+      <JumpScare isTriggered={triggerJumpScare} />
     </div>
   );
 };
-

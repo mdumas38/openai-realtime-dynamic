@@ -121,10 +121,9 @@ export const TalkToMeGame: React.FC<TalkToMeGameProps> = ({ onQuit }) => {
           setGamePhase('connectionAttempt');
           break;
         case 'connectionAttempt':
-          setGamePhase('connectionFailed');
+          setShowEndingSequence(true);
           break;
         case 'connectionFailed':
-          setShowEndingSequence(true);
           break;
       }
       setPhaseStartTime(currentTime);
